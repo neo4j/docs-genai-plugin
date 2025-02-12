@@ -3,6 +3,8 @@
 [[functions-and-procedures]]
 == Functions and procedures
 
+=== Functions and procedures to encode embeddings with AI providers
+
 .genai.vector.encodeBatch() label:function[]
 |===
 | *Syntax* 3+m| genai.vector.encode(resource :: STRING, provider :: STRING, configuration = {} :: ANY) :: ANY
@@ -13,7 +15,6 @@
 | `configuration` | `MAP` | The provider specific settings.
 | *Returns* 3+| `ANY`
 |===
-
 
 .genai.vector.encodeBatch() label:procedure[]
 |===
@@ -29,6 +30,11 @@
 | `vector` | `INTEGER` | The generated vector embedding for the resource.
 |===
 
+[TIP]
+To store the embeddings created by this function and procedure as node or relationship properties on a Neo4j database, it is necessary to use the built-in procedures link:{neo4j-docs-base-uri}/operations-manual/current/procedures/#procedure_db_create_setnodevectorproperty[`db.create.setNodeVectorProperty`] and 
+link:{neo4j-docs-base-uri}/operations-manual/current/procedures/#procedure_db_create_setrelationshipvectorproperty[`db.create.setRelationshipVectorProperty`].
+Once stored on properties, they can be queried using a link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes[vector index].
+
 .genai.vector.listEncodingProviders() label:procedure[]
 |===
 | *Syntax* 3+m| genai.vector.listEncodingProviders() :: (name :: STRING, requiredConfigType :: STRING, optionalConfigType :: STRING, defaultConfig :: MAP)
@@ -40,12 +46,22 @@
 | `defaultConfig` | `MAP` | The default values for the GenAI provider.
 |===
 
+=== Procedures for interacting with external vector databases
+
+The GenAI plugin supports interacting with the following vector databases:
+
+* link:https://docs.trychroma.com/[ChromaDB]
+* link:https://milvus.io/docs[Milvus]
+* link:https://docs.pinecone.io/guides[Pinecone]
+* link:https://qdrant.tech/documentation/[Qdrant]
+* link:https://weaviate.io/developers/weaviate[Weaviate]
+
 
 [[ai-providers]]
 == GenAI providers
 
 The following GenAI providers are supported for generating vector embeddings.
-Each provider has its own configuration map that can be passed to `genai.vector.encode` or `genai.vector.encodeBatch`.
+Each provider has its own configuration map that can be passed to `genai.vector.encode()` or `genai.vector.encodeBatch()`.
 
 [[vertex-ai]]
 === Vertex AI

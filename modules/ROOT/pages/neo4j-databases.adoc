@@ -1,7 +1,7 @@
 
 = Create and store embeddings in a Neo4j database
 
-Neo4j's link:{neo4j-docs-base-uri}/cypher-manual/indexes/semantic-indexes/vector-indexes[vector indexes] and link:{neo4j-docs-base-uri}/cypher-manual/functions/vector[vector functions] allow you to calculate the similarity between node and relationship properties in a graph.
+Neo4j's link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes[vector indexes] and link:{neo4j-docs-base-uri}/cypher-manual/functions/vector[vector functions] allow you to calculate the similarity between node and relationship properties in a graph.
 A prerequisite for using these features is that vector embeddings have been set as properties of these entities.
 This page shows how these embeddings can be created and stored as properties on nodes and relationships in a Neo4j database using the GenAI plugin.
 
