@@ -1,7 +1,7 @@
 * xref:index.adoc[]
 
 * xref:neo4j-databases.adoc[]
-* xref:external-databses.adoc[]
+* xref:external-databases.adoc[]
 * xref:reference.adoc[]
 
 

@@ -1,15 +1,19 @@
-:description: The GenAI Plugin
+:description: Information about Neo4j's GenAI plugin.
+:page-role: new-5.17
 
 = Introduction
 
 Neo4j's GenAI plugin creates vector embeddings and stores them either in a Neo4j database or in a remote vector database.
 
-To create embeddings with the GenAI plugin you need an account and API credentials from any of the following GenAI providers: xref:reference.adoc#vertex-ai[Vertex AI], xref:reference.adoc#openai[OpenAI], xref:reference.adoc#azure-openai[Azure OpenAI], and xref:genai-plugin/reference.adoc#amazon-bedrock[Amazon Bedrock].
+To create embeddings with the GenAI plugin you need an account and API credentials from any of the following GenAI providers: xref:reference.adoc#vertex-ai[Vertex AI], xref:reference.adoc#openai[OpenAI], xref:reference.adoc#azure-openai[Azure OpenAI], and xref:reference.adoc#amazon-bedrock[Amazon Bedrock].
+
+[TIP]
+To learn more about using embeddings in Neo4j, see link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes/#embeddings[Vector indexes -> Vectors and embeddings in Neo4j].
 
 [[installation]]
 == Installation
 
-The GenAI plugin is enabled by default in link:link:{neo4j-docs-base-uri}/aura/[Neo4j Aura].
+The GenAI plugin is enabled by default in link:{neo4j-docs-base-uri}/aura/[Neo4j Aura].
 
 The plugin needs to be installed on self-managed instances.
 This is done by moving the `neo4j-genai.jar` file from `/products` to `/plugins` in the Neo4j home directory, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.

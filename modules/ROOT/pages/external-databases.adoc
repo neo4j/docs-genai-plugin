@@ -1,10 +1,10 @@
 :description: Information about how the GenAI plugin can create, store, and query embeddings in external vector databases.
-:
-= Working with external vector databases
+:page-role: new-2025.02
+= Store and query embeddings on external vector databases
 
-The GenAI plugin can be used be used to store embeddings in an external vector database.
+The GenAI plugin can store embeddings in an external vector database.
 It can also be used to retrieve information about and query these externally hosted embeddings.
-Doing this can offload your Neo4j instance from storing large properties.
+Doing this can offload your Neo4j instance from storing very large properties.
 
 The GenAI plugin supports interacting with the following vector databases:
 
@@ -14,8 +14,8 @@ The GenAI plugin supports interacting with the following vector databases:
 * link:https://qdrant.tech/documentation/[Qdrant]
 * link:https://weaviate.io/developers/weaviate[Weaviate]
 
-[TIP]
-To learn more about using embeddings in Neo4j, see xref:indexes/semantic-indexes/vector-indexes.adoc#embeddings[Vector indexes -> Vectors and embeddings in Neo4j].
+[NOTE]
+The examples on this page use *Qdrant* as the external vector database for storing, retrieving, and querying embeddings.
 
 == Create, update, and delete data in a collection
 
@@ -26,5 +26,5 @@ To learn more about using embeddings in Neo4j, see xref:indexes/semantic-indexes
 == Collection management
 
 
-== Provider details
+== Vector database provider details
 
