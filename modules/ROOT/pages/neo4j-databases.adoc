@@ -1,0 +1,10 @@
+= Create and store embeddings in a Neo4j database
+
+Neo4j's xref:indexes/semantic-indexes/vector-indexes.adoc[] and xref:functions/vector.adoc[] allow you to calculate the similarity between node and relationship properties in a graph.
+A prerequisite for using these features is that vector embeddings have been set as properties of these entities.
+This page shows how these embeddings can be created and stored as properties on nodes and relationships in a Neo4j database.
+
+[TIP]
+To learn more about using embeddings in Neo4j, see xref:indexes/semantic-indexes/vector-indexes.adoc#embeddings[Vector indexes -> Vectors and embeddings in Neo4j].
+
+
