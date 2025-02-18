@@ -104,7 +104,7 @@ This result only shows the first 4 of the 1536 numbers in the embedding.
 ====
 
 [[multiple-embeddings]]
-== Generating a batch of embeddings and store them
+== Generate a batch of embeddings and store them
 
 Use the `genai.vector.encodeBatch` procedure to generate many vector embeddings with a single API request.
 This procedure takes a list of resources as an input, and returns the same number of result rows, instead of a single one.
@@ -135,7 +135,7 @@ Each returned row contains the following columns:
 * The `resource` (a `STRING`) is the name of the input resource.
 * The `vector` (a `LIST<FLOAT>`) is the generated vector embedding for this resource.
 
-.Create embeddings from a limited number of properties and store them
+.Create embeddings from a limited number of nodes and store them
 ====
 
 [source, cypher, role=test-skip]
@@ -155,7 +155,8 @@ CALL db.create.setNodeVectorProperty(moviesList[index], 'embedding', vector) // 
 <3> `db.create.setNodeVectorProperty` is run for each `vector` returned by `genai.vector.encodeBatch`, and stores that vector as a property named `embedding` on the corresponding node.
 ====
 
-.Create embeddings from a large number of properties and store them
+[#encodebatch-large-dataset]
+.Create embeddings from a large number of nodes and store them
 ====
 [source, cypher, role=test-skip]
 ----

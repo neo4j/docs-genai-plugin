@@ -17,10 +17,251 @@ The GenAI plugin supports interacting with the following vector databases:
 [NOTE]
 The examples on this page use *Qdrant* as the external vector database for storing, retrieving, and querying embeddings.
 
+
+== Preliminary parameters
+
+All procedures to interact with external databases take a configuration map as last parameter, so it is convenient to store it in a parameter for usage in all procedure calls.
+Parameters are set in different ways depending on the query tool you use.
+
+.Set an external database `configuration` parameter in Neo4j Browser
+[source, cypher]
+----
+:param configuration => {
+  token: '<API token to external database>' // <.>
+}
+----
+
+<.> The API key to the external vector database.
+
+Two other pieces of data that are often required in examples throughout the page are the external database collection name and an OpenAI token to generate embeddings, so we store those in parameters as well.
+
+[source, cypher]
+----
+:params {
+  collection: 'movies'  // <.>
+  openai_token: '<API token for OpenAI>' // <.>
+}
+----
+
+<.> The collection name in the external vector database.
+<.> An OpenAI token to generate vector embeddings (see xref:reference.adoc#ai-providers[GenAI providers] for supported alternatives to OpenAI). +
+You can also avoid using cloud providers and rely on link:https://neo4j.com/docs/genai/tutorials/embeddings-vector-indexes/embeddings/sentence-transformers/[open source alternatives].
+
+
 == Create, update, and delete data in a collection
 
+.Generate and store embeddings in external database (small dataset)
+====
+To insert points into the vector database, use the procedure `genai.vector.external.upsert`.
 
+[source, cypher]
+----
+MATCH (m:Movie) LIMIT 20
+WITH collect(m) AS moviesList
+WITH moviesList, [movie IN moviesList | movie.title || ': ' || movie.plot] AS batch
+CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openai_token }) YIELD index, vector  // <.>
+WITH moviesList, index, vector
+CALL genai.vector.external.upsert(  // <.>
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    [{  // <.>
+        id: index,  // <.>
+        vector: vector,
+        metadata: {  // <.>
+            title: moviesList[index]['title'],
+            year: moviesList[index]['year']
+        }
+    }],
+    $configuration  // <.>
+) YIELD vendor
+----
+
+<.> The procedure `genai.vector.encodeBatch` generates embeddings for a list of strings.
+For more information, see xref:neo4j-databases.adoc#multiple-embeddings[Generate a batch of embeddings and store them].
+<.> The procedure `genai.vector.external.upsert` inserts (or updates, if the IDs exist already) points into the external vector database.
+<.> The external database URI.
+<.> The external database collection name.
+<.> A list of points to insert into the external database, each containing an `id`, a `vector` embedding, and an optional `metadata` payload. +
+<.> The allowed format of `id` depends on the external database provider -- in general, you should set identifiers that you can map back to Neo4j entities. For more information, see xref:id-mapping[Mapping entities between Neo4j and external databases]. +
+<.> The metadata don't need to contain all the properties that the entity has in Neo4j. It is a good rule of thumb to include the Neo4j key property and any additional properties you may wish to xref:query[filter queries] on.
+====
+
+
+.Generate and store embeddings in external database (large dataset)
+====
+
+The previous example submits one request to the external database for each point to insert.
+Although that is an easier way to get started, that workflow is guaranteed to be slow as the dataset size grows, and could result in throttling by the external provider.
+A faster way is to submit a batch of points.
+
+[source, cypher]
+----
+MATCH (m:Movie)
+WITH collect(m) AS moviesList,
+    count(*) AS total,
+    100 AS batchSize
+UNWIND range(0, total-1, batchSize) AS batchStart
+CALL (moviesList, batchStart, batchSize) {  // <.>
+    WITH [movie IN moviesList[batchStart .. batchStart + batchSize] | movie.title || ': ' || movie.plot] AS batch
+    CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openai_token }) YIELD index, vector
+    WITH collect({  // <.>
+        id: index,
+        vector: vector,
+        metadata: {
+            title: moviesList[batchStart + index]['title'],
+            year: moviesList[batchStart + index]['year']
+        }
+    }) AS moviesWithEmbeddings
+    CALL genai.vector.external.upsert(
+        $qdrant_uri,
+        $collection,
+        moviesWithEmbeddings,
+        $configuration
+    ) YIELD vendor
+    RETURN vendor
+} IN CONCURRENT TRANSACTIONS OF 1 ROW
+RETURN vendor
+----
+
+<.> `CALL` processes nodes in batches of size `batchSize`.
+For more information on the structure of the example, see xref:neo4j-databases.adoc#encodebatch-large-dataset[Create embeddings from a large number of nodes and store them].
+<.> The `collect` call creates a list of maps, each containing a point to insert.
+
+prepend with `:auto` in browser, as in `:auto MATCH (m:Movie) ... `.
+
+[TIP]
+This example may not scale to large datasets, as `collect(m)` requires the whole result set to be loaded in memory.
+For an alternative method more suitable to processing large amounts of data, see link:https://neo4j.com/docs/genai/tutorials/embeddings-vector-indexes/embeddings/cloud-providers/#_create_embeddings_for_movies[Embeddings & Vector Indexes Tutorial -> Create embeddings with cloud AI providers].
+
+====
+
+To verify that the insertion in external db was ok,
+
+[source, cypher]
+----
+CALL genai.vector.external.get(
+    $qdrant_uri,
+    $collection,
+    [index],
+    $configuration
+) YIELD id, metadata
+RETURN id, metadata
+----
+
+set allResults: true in config to get back id and vector too.
+
+To delete vectors,
+
+[source, cypher]
+----
+CALL genai.vector.external.delete(
+    $qdrant_uri,
+    $collection,
+    [1,2,3],
+    $configuration
+) YIELD status, vendor
+RETURN status, vendor
+----
+
+
+[#query]
 == Query a collection
+
+.Query for similarity
+[source, cypher]
+----
+MATCH (m:Movie {title: 'Toy Story'})
+WITH m.title || ': ' || m.plot AS movieData
+WITH genai.vector.encode(movieData, 'OpenAI', { token: $openai_token }) AS vector
+CALL genai.vector.external.query(
+    $qdrant_uri,
+    $collection,
+    vector,
+    null,
+    3,
+    $configuration
+) YIELD id, metadata, score
+WHERE score < .999
+RETURN id, metadata, score
+----
+
+To enforce constraints, filter
+
+[source, cypher]
+----
+MATCH (m:Movie {title: 'Toy Story'})
+WITH m.title || ': ' || m.plot AS movieData
+WITH genai.vector.encode(movieData, 'OpenAI', { token: $openai_token }) AS vector
+CALL genai.vector.external.query(
+    $qdrant_uri,
+    $collection,
+    vector,
+    {
+      must: {
+        key: 'year',
+        match: {value: 1995}
+      }
+    },
+    3,
+    $configuration
+) YIELD id, metadata, score
+WHERE score < .999
+RETURN id, metadata, score
+----
+
+
+[#id-mapping]
+== Mapping entities between Neo4j and external databases
+
+[source, python]
+----
+import neo4j
+import uuid
+
+
+URI = '<URI for Neo4j database>'
+AUTH = ('<Username>', '<Password>')
+DB_NAME = '<Database name>'  # examples: 'recommendations-50', 'neo4j'
+openai_token = '<OpenAI API token>'
+
+namespace = uuid.uuid4()
+
+qdrant_uri = '<URI for Qdrant database>'
+qdrant_collection = '<Name of Qdrant collection>'
+qdrant_key = '<API key for Qdrant database>'
+qdrant_headers = { 'api-key': qdrant_key }
+
+driver = neo4j.GraphDatabase.driver(URI, auth=AUTH)
+driver.verify_connectivity()
+
+with driver.session(database=DB_NAME) as session:
+    result = session.run('''
+        MATCH (m:Movie) LIMIT 5
+        RETURN m.plot AS plot, m.title AS title
+    ''')
+    for record in result:
+        title = record.get('title')
+        plot = record.get('plot')
+        qdrant_index = str(uuid.uuid5(namespace, title))  # <.>
+
+        print(f'Processing movie `{title}`')
+        session.run('''
+            WITH genai.vector.encode(
+                $title || ' ' || $plot,
+                'OpenAI', { token: $token }
+            ) AS vector
+            CALL genai.vector.external.upsert($qdrant_uri, $collection, [{
+              id: $index,
+              vector: vector,
+              metadata: {
+                title: $title
+              }
+            }], $configuration) YIELD vendor
+            RETURN vendor
+        ''',
+        title=title, plot=plot, index=qdrant_index, token=openai_token,
+        qdrant_uri=qdrant_uri, collection=qdrant_collection, configuration=qdrant_headers)
+----
 
 
 == Collection management

@@ -1,6 +1,6 @@
 {
   "name": "genai-plugin",
-  "version": "2025.01",
+  "version": "2025.02",
   "description": "Neo4j GenAI Plugin",
   "main": "server.js",
   "scripts": {
