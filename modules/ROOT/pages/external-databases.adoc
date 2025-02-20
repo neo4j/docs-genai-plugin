@@ -50,6 +50,7 @@ You can also avoid using cloud providers and rely on link:https://neo4j.com/docs
 
 == Create, update, and delete data in a collection
 
+[#upsert-points]
 .Generate and store embeddings in external database (small dataset)
 ====
 To insert points into the vector database, use the procedure `genai.vector.external.upsert`.
@@ -72,7 +73,7 @@ CALL genai.vector.external.upsert(  // <.>
             year: moviesList[index]['year']
         }
     }],
-    $configuration  // <.>
+    $configuration
 ) YIELD vendor
 ----
 
@@ -87,12 +88,13 @@ For more information, see xref:neo4j-databases.adoc#multiple-embeddings[Generate
 ====
 
 
+[#upsert-points-large]
 .Generate and store embeddings in external database (large dataset)
 ====
 
 The previous example submits one request to the external database for each point to insert.
-Although that is an easier way to get started, that workflow is guaranteed to be slow as the dataset size grows, and could result in throttling by the external provider.
-A faster way is to submit a batch of points.
+Although that is an easy way to get started, that workflow is guaranteed to be slow as the dataset size grows, and could result in throttling by the external provider.
+A faster way is to submit batches of points to the external database.
 
 [source, cypher]
 ----
@@ -127,30 +129,40 @@ RETURN vendor
 For more information on the structure of the example, see xref:neo4j-databases.adoc#encodebatch-large-dataset[Create embeddings from a large number of nodes and store them].
 <.> The `collect` call creates a list of maps, each containing a point to insert.
 
-prepend with `:auto` in browser, as in `:auto MATCH (m:Movie) ... `.
-
 [TIP]
 This example may not scale to large datasets, as `collect(m)` requires the whole result set to be loaded in memory.
 For an alternative method more suitable to processing large amounts of data, see link:https://neo4j.com/docs/genai/tutorials/embeddings-vector-indexes/embeddings/cloud-providers/#_create_embeddings_for_movies[Embeddings & Vector Indexes Tutorial -> Create embeddings with cloud AI providers].
-
 ====
 
-To verify that the insertion in external db was ok,
+
+[#get-points]
+.Retrieve points from external database
+====
+To verify that the insertion in external database was successful, you can retrieve a point's information via the procedure `genai.vector.external.get`.
 
 [source, cypher]
 ----
-CALL genai.vector.external.get(
-    $qdrant_uri,
-    $collection,
-    [index],
-    $configuration
+CALL genai.vector.external.get( // <.>
+    $qdrant_uri,  // <.>
+    $collection, // <.>
+    [1,2,3], // <.>
+    $configuration // <.>
 ) YIELD id, metadata
 RETURN id, metadata
 ----
 
-set allResults: true in config to get back id and vector too.
+<.> The procedure `genai.vector.external.get` retrieves points from the external vector database, given their IDs.
+<.> The external database URI.
+<.> The external database collection name.
+<.> A list of IDs to retrieve from the external database.
+<.> By default, the procedure only retrieves the metadata for the given IDs.
+If you want the `id` and `vector` fields populated as well, set `allResults: true` in the configuration map.
+====
 
-To delete vectors,
+[#delete-points]
+.Delete points from external database
+====
+To delete points from the external database, use the procedure `genai.vector.external.delete`.
 
 [source, cypher]
 ----
@@ -162,6 +174,12 @@ CALL genai.vector.external.delete(
 ) YIELD status, vendor
 RETURN status, vendor
 ----
+
+<.> The procedure `genai.vector.external.delete` removes points from the external vector database, given their IDs.
+<.> The external database URI.
+<.> The external database collection name.
+<.> A list of IDs to delete from the external database.
+====
 
 
 [#query]
