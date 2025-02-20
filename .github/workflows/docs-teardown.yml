@@ -4,9 +4,8 @@ name: "Documentation Teardown"
 on:
   pull_request_target:
     branches:
-      - "4.4"
-      - "5.x"
-      - "dev"
+      - main
+      - dev
     types:
       - closed
 
@@ -38,7 +37,7 @@ jobs:
           surge teardown $DEPLOY_URL --token "$SURGE_TOKEN"
 
       - name: Comment on PR
-        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
+        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 #v2.9.0
         with:
           number: ${{ github.event.pull_request.number }}
           header: docs-pr-changes
