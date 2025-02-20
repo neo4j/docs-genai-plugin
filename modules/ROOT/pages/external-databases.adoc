@@ -166,10 +166,10 @@ To delete points from the external database, use the procedure `genai.vector.ext
 
 [source, cypher]
 ----
-CALL genai.vector.external.delete(
-    $qdrant_uri,
-    $collection,
-    [1,2,3],
+CALL genai.vector.external.delete(  // <.>
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    [1,2,3], // <.>
     $configuration
 ) YIELD status, vendor
 RETURN status, vendor
@@ -185,26 +185,42 @@ RETURN status, vendor
 [#query]
 == Query a collection
 
+Once the external database contains vector embeddings for the graph entities stored in your Neo4j database, you can use the `genai.vector.external.query` to retrieve points similar to an embedding for a given node.
+
 .Query for similarity
 [source, cypher]
 ----
 MATCH (m:Movie {title: 'Toy Story'})
 WITH m.title || ': ' || m.plot AS movieData
-WITH genai.vector.encode(movieData, 'OpenAI', { token: $openai_token }) AS vector
-CALL genai.vector.external.query(
-    $qdrant_uri,
-    $collection,
-    vector,
-    null,
-    3,
+WITH genai.vector.encode(movieData, 'OpenAI', { token: $openai_token }) AS vector  // <.>
+CALL genai.vector.external.query(  // <.>
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    vector, // <.>
+    null, // <.>
+    3, // <.>
     $configuration
 ) YIELD id, metadata, score
-WHERE score < .999
+WHERE score < .999 // <.>
 RETURN id, metadata, score
 ----
 
-To enforce constraints, filter
+<.> The procedure `genai.vector.external.get` retrieves points from the external vector database, given their IDs.
+<.> The external database URI.
+<.> The external database collection name.
+<.> The vector embedding that points should be compared to.
+Results will be similar to this vector.
+<.> A filter map (see next example).
+<.> Number of similar points to return.
+<.> Filter out the query vector (i.e. exclude `Toy Story` from return list).
 
+The query returns the IDs of points close to the given vector.
+To retrieve Neo4j entities corresponding to those IDs, you need to have set up your vector dataset in a way that allows you to map vectors to graph entities.
+For more information, see xref:id-mapping[Mapping entities between Neo4j and external databases].
+
+You can include a filter map to enforce some constraints on the query, depending on the points' metadata.
+
+.Query for similarity, with constraints
 [source, cypher]
 ----
 MATCH (m:Movie {title: 'Toy Story'})
@@ -214,7 +230,7 @@ CALL genai.vector.external.query(
     $qdrant_uri,
     $collection,
     vector,
-    {
+    {  // <.>
       must: {
         key: 'year',
         match: {value: 1995}
@@ -227,14 +243,24 @@ WHERE score < .999
 RETURN id, metadata, score
 ----
 
+<.> Restrict query space only to points for which the `year` metadata value is `1995`.
+The structure and fields of this map depends on the external database provider (this example uses link:https://qdrant.tech/documentation/concepts/filtering/[Qdrant Filtering]).
+
 
 [#id-mapping]
 == Mapping entities between Neo4j and external databases
 
+There needs to be a mapping between the graph entities in the Neo4j database and the points in the external vector database.
+If your Neo4j dataset has a numerical or Universally Unique ID key property, you can use that to populate the IDs in the external database.
+However, if you use a string property (such as movie titles) as key, you need to generate a deterministic 1:1 mapping so that you can map vector query results to Neo4j entities.
+This is not possible through Cypher alone: you need to delegate this part of the workflow to your client application.
+
+The example below shows how to use the link:https://neo4j.com/docs/python-manual/current/[Neo4j Python driver] to generate UUIDs from movie titles and upsert the corresponding points into Qdrant.
+
 [source, python]
 ----
 import neo4j
-import uuid
+from uuid import uuid5
 
 
 URI = '<URI for Neo4j database>'
@@ -242,12 +268,12 @@ AUTH = ('<Username>', '<Password>')
 DB_NAME = '<Database name>'  # examples: 'recommendations-50', 'neo4j'
 openai_token = '<OpenAI API token>'
 
-namespace = uuid.uuid4()
+namespace = 'neo4j-qdrant-movies'  # <.>
 
 qdrant_uri = '<URI for Qdrant database>'
 qdrant_collection = '<Name of Qdrant collection>'
 qdrant_key = '<API key for Qdrant database>'
-qdrant_headers = { 'api-key': qdrant_key }
+qdrant_config = { 'token': qdrant_key }
 
 driver = neo4j.GraphDatabase.driver(URI, auth=AUTH)
 driver.verify_connectivity()
@@ -260,7 +286,7 @@ with driver.session(database=DB_NAME) as session:
     for record in result:
         title = record.get('title')
         plot = record.get('plot')
-        qdrant_index = str(uuid.uuid5(namespace, title))  # <.>
+        qdrant_index = str(uuid5(namespace, title))  # <.>
 
         print(f'Processing movie `{title}`')
         session.run('''
@@ -274,15 +300,85 @@ with driver.session(database=DB_NAME) as session:
               metadata: {
                 title: $title
               }
-            }], $configuration) YIELD vendor
-            RETURN vendor
+            }], $configuration) YIELD status, vendor
+            RETURN status, vendor
         ''',
         title=title, plot=plot, index=qdrant_index, token=openai_token,
-        qdrant_uri=qdrant_uri, collection=qdrant_collection, configuration=qdrant_headers)
+        qdrant_uri=qdrant_uri, collection=qdrant_collection, configuration=qdrant_config)
 ----
+
+<.> The namespace is used as seed to generate deterministic UUIDs for movie titles.
+You can change it to something different, but you need to use the same one throughout all `upsert` and `query` calls.
+<.> Generate a UUID basing on the namespace seed and the movie title, to be used as point ID in the external database.
+
+
+== Query/Get points and update Neo4j entities
+
+getAndUpdate
+
+queryAndUpdate
 
 
 == Collection management
+
+[source, cypher]
+----
+
+CALL genai.vector.external.createCollection($qdrant_uri, $collection_name, 'Cosine', 1536, $configuration)
+
+CALL genai.vector.external.info($qdrant_uri, $collection_name, $configuration) YIELD*
+
+{
+  "points_count": 0,
+  "indexed_vectors_count": 0,
+  "optimizer_status": "ok",
+  "status": "green",
+  "segments_count": 2,
+  "config": {
+	"quantization_config": null,
+	"hnsw_config": {
+  	"max_indexing_threads": 0,
+  	"full_scan_threshold": 10000,
+  	"on_disk": false,
+  	"m": 16,
+  	"ef_construct": 100
+	},
+	"optimizer_config": {
+  	"indexing_threshold": 20000,
+  	"flush_interval_sec": 5,
+  	"default_segment_number": 0,
+  	"deleted_threshold": 0.2,
+  	"memmap_threshold": null,
+  	"max_segment_size": null,
+  	"vacuum_min_vector_number": 1000,
+  	"max_optimization_threads": null
+	},
+	"strict_mode_config": {
+  	"enabled": false
+	},
+	"params": {
+  	"vectors": {
+    	"distance": "Cosine",
+    	"size": 1536
+  	},
+  	"replication_factor": 1,
+  	"write_consistency_factor": 1,
+  	"on_disk_payload": true,
+  	"shard_number": 1
+	},
+	"wal_config": {
+  	"wal_segments_ahead": 0,
+  	"wal_capacity_mb": 32
+	}
+  },
+  "payload_schema": {
+
+  }
+}
+
+CALL genai.vector.external.deleteCollection($qdrant_uri, $collection_name, $configuration)
+
+----
 
 
 == Vector database provider details
