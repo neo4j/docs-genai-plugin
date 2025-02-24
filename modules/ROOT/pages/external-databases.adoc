@@ -1,5 +1,6 @@
 :description: Information about how the GenAI plugin can create, store, and query embeddings in external vector databases.
-:page-role: new-2025.02
+:page-role: new-2025.03
+
 = Store and query embeddings on external vector databases
 
 The GenAI plugin can store embeddings in an external vector database.
@@ -18,16 +19,18 @@ The GenAI plugin supports interacting with the following vector databases:
 The examples on this page use *Qdrant* as the external vector database for storing, retrieving, and querying embeddings.
 
 
+[#parameters]
 == Preliminary parameters
 
 All procedures to interact with external databases take a configuration map as last parameter, so it is convenient to store it in a parameter for usage in all procedure calls.
-Parameters are set in different ways depending on the query tool you use.
+Parameters are set in different ways depending on the query tool you are using.
 
-.Set an external database `configuration` parameter in Neo4j Browser
 [source, cypher]
 ----
-:param configuration => {
-  token: '<API token to external database>' // <.>
+{
+  "configuration": {
+    "token": "<API token to external database>" // <.>
+  }
 }
 ----
 
@@ -37,9 +40,9 @@ Two other pieces of data that are often required in examples throughout the page
 
 [source, cypher]
 ----
-:params {
-  collection: 'movies'  // <.>
-  openai_token: '<API token for OpenAI>' // <.>
+{
+  "collection": "movies",  // <.>
+  "openai_token": "<API token for OpenAI>" // <.>
 }
 ----
 
@@ -48,6 +51,7 @@ Two other pieces of data that are often required in examples throughout the page
 You can also avoid using cloud providers and rely on link:https://neo4j.com/docs/genai/tutorials/embeddings-vector-indexes/embeddings/sentence-transformers/[open source alternatives].
 
 
+[#manage-data]
 == Create, update, and delete data in a collection
 
 [#upsert-points]
@@ -73,7 +77,7 @@ CALL genai.vector.external.upsert(  // <.>
             year: moviesList[index]['year']
         }
     }],
-    $configuration
+    $configuration  // <.>
 ) YIELD vendor
 ----
 
@@ -85,6 +89,7 @@ For more information, see xref:neo4j-databases.adoc#multiple-embeddings[Generate
 <.> A list of points to insert into the external database, each containing an `id`, a `vector` embedding, and an optional `metadata` payload. +
 <.> The allowed format of `id` depends on the external database provider -- in general, you should set identifiers that you can map back to Neo4j entities. For more information, see xref:id-mapping[Mapping entities between Neo4j and external databases]. +
 <.> The metadata don't need to contain all the properties that the entity has in Neo4j. It is a good rule of thumb to include the Neo4j key property and any additional properties you may wish to xref:query[filter queries] on.
+<.> A map containing (at minimum) the API token to the external database. For more information, see xref:parameters[Preliminary parameters].
 ====
 
 
@@ -155,7 +160,9 @@ RETURN id, metadata
 <.> The external database URI.
 <.> The external database collection name.
 <.> A list of IDs to retrieve from the external database.
-<.> By default, the procedure only retrieves the metadata for the given IDs.
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters]. +
+By default, the procedure only retrieves the metadata for the given IDs.
 If you want the `id` and `vector` fields populated as well, set `allResults: true` in the configuration map.
 ====
 
@@ -170,7 +177,7 @@ CALL genai.vector.external.delete(  // <.>
     $qdrant_uri, // <.>
     $collection, // <.>
     [1,2,3], // <.>
-    $configuration
+    $configuration // <.>
 ) YIELD status, vendor
 RETURN status, vendor
 ----
@@ -179,6 +186,8 @@ RETURN status, vendor
 <.> The external database URI.
 <.> The external database collection name.
 <.> A list of IDs to delete from the external database.
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters].
 ====
 
 
@@ -199,13 +208,13 @@ CALL genai.vector.external.query(  // <.>
     vector, // <.>
     null, // <.>
     3, // <.>
-    $configuration
+    $configuration // <.>
 ) YIELD id, metadata, score
 WHERE score < .999 // <.>
 RETURN id, metadata, score
 ----
 
-<.> The procedure `genai.vector.external.get` retrieves points from the external vector database, given their IDs.
+<.> The procedure `genai.vector.external.query` retrieves points similar to the provided `vector` from the external vector database.
 <.> The external database URI.
 <.> The external database collection name.
 <.> The vector embedding that points should be compared to.
@@ -213,6 +222,8 @@ Results will be similar to this vector.
 <.> A filter map (see next example).
 <.> Number of similar points to return.
 <.> Filter out the query vector (i.e. exclude `Toy Story` from return list).
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters].
 
 The query returns the IDs of points close to the given vector.
 To retrieve Neo4j entities corresponding to those IDs, you need to have set up your vector dataset in a way that allows you to map vectors to graph entities.
@@ -312,22 +323,164 @@ You can change it to something different, but you need to use the same one throu
 <.> Generate a UUID basing on the namespace seed and the movie title, to be used as point ID in the external database.
 
 
+[query-get-andupdate]
 == Query/Get points and update Neo4j entities
 
-getAndUpdate
+The procedures xref:get-points[`genai.vector.external.get`] and xref:query[`genai.vector.external.query`] retrieve vectors from the external database, either given a list of IDs or basing on a query embedding.
 
-queryAndUpdate
+The procedures `genai.vector.external.getAndUpdate` and `genai.vector.external.queryAndUpdate` retrieve vectors in the same way, and they also update the corresponding Neo4j entities with data present in the external database.
+It is a way to keep the two databases in sync: both metadata content and the embedding vector (if present) are updated in Neo4j, drawing from the external database.
 
+The mapping between external vectors and graph entities is configured via a map entry under the key `mapping` in the configuration parameter.
 
-== Collection management
+[source, json]
+----
+{
+  "mapping": {
+    "nodeLabel": "<Neo4j label>",  // <.>
+    "entityKey": "<Neo4j key property>",  // <.>
+    "metadataKey": "<External key property>",  // <.>
+    "embeddingKey": "<Neo4j vector property>"  // <.>
+  }
+}
+----
+
+<.> Label assigned to Neo4j nodes to be updated.
+<.> Name of the property acting as node key in Neo4j.
+<.> Name of the metadata entry in the external database matching the node key in Neo4j.
+<.> (Optional) Name of the property containing the vector embedding in Neo4j.
+
+[NOTE]
+The entities must already exist in Neo4j: the procedures only _update_ existing nodes, but don't _create_ any new ones.
+
+[#getandupdate]
+.Retrieve points from external database and update corresponding Neo4j entities
+====
+
+[source, parameters]
+----
+{
+  "configuration": {
+    "token": "<API token to external database>"
+  },
+  "mapping": {
+    "nodeLabel": "Movie",
+    "entityKey": "title",
+    "metadataKey": "title",
+  }
+}
+----
 
 [source, cypher]
 ----
+CALL genai.vector.external.getAndUpdate( // <.>
+    $qdrant_uri,  // <.>
+    $collection, // <.>
+    [1,2,3], // <.>
+    $configuration // <.>
+) YIELD id, metadata
+RETURN id, metadata
+----
 
-CALL genai.vector.external.createCollection($qdrant_uri, $collection_name, 'Cosine', 1536, $configuration)
+<.> The procedure `genai.vector.external.getAndUpdate` retrieves points from the external vector database, given their IDs, and copies their information into the corresponding Neo4j entities.
+<.> The external database URI.
+<.> The external database collection name.
+<.> A list of IDs from the external database.
+<.> A map containing the API token to the external database and a mapping map.
+====
 
-CALL genai.vector.external.info($qdrant_uri, $collection_name, $configuration) YIELD*
+[#queryandupdate]
+.Query for similarity
+====
 
+
+[source, parameters]
+----
+{
+  "configuration": {
+    "token": "<API token to external database>"
+  },
+  "mapping": {
+    "nodeLabel": "Movie",
+    "entityKey": "title",
+    "metadataKey": "title",
+  }
+}
+----
+
+[source, cypher]
+----
+MATCH (m:Movie {title: 'Toy Story'})
+WITH m.title || ': ' || m.plot AS movieData
+WITH genai.vector.encode(movieData, 'OpenAI', { token: $openai_token }) AS vector
+CALL genai.vector.external.queryAndUpdate(  // <.>
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    vector, // <.>
+    null, // <.>
+    3, // <.>
+    $configuration // <.>
+) YIELD id, metadata, score
+RETURN id, metadata, score
+----
+
+<.> The procedure `genai.vector.external.queryAndUpdate` retrieves points similar to the provided `vector` from the external vector database, and copies their information into the corresponding Neo4j entities.
+<.> The external database URI.
+<.> The external database collection name.
+<.> The vector embedding that points should be compared to.
+Results will be similar to this vector.
+<.> A filter map (see next example).
+<.> Number of similar points to return.
+<.> A map containing the API token to the external database and a mapping map.
+
+====
+
+
+[#collection-management]
+== Collection management
+
+You can create and delete collections in the external vector database via Cypher procedures, as well retrieving information about existing collections.
+
+.Create a new collection
+====
+[source, cypher]
+----
+CALL genai.vector.external.createCollection(
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    'Cosine', // <.>
+    1536, // <.>
+    $configuration // <.>
+)
+----
+
+<.> The external database URI.
+<.> The name of the new collection.
+<.> The similarity function to be used for queries (valid values depend on the external database provider).
+<.> The vector embeddings size.
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters].
+====
+
+.Retrieve information for a collection
+====
+[source, cypher]
+----
+CALL genai.vector.external.info(
+    $qdrant_uri, // <.>
+    $collection_name, // <.>
+    $configuration // <.>
+) YIELD *
+----
+
+<.> The external database URI.
+<.> The name of the collection to retrieve information of.
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters].
+
+.Example output for collection info
+[source, output]
+----
 {
   "points_count": 0,
   "indexed_vectors_count": 0,
@@ -335,50 +488,65 @@ CALL genai.vector.external.info($qdrant_uri, $collection_name, $configuration) Y
   "status": "green",
   "segments_count": 2,
   "config": {
-	"quantization_config": null,
-	"hnsw_config": {
-  	"max_indexing_threads": 0,
-  	"full_scan_threshold": 10000,
-  	"on_disk": false,
-  	"m": 16,
-  	"ef_construct": 100
-	},
-	"optimizer_config": {
-  	"indexing_threshold": 20000,
-  	"flush_interval_sec": 5,
-  	"default_segment_number": 0,
-  	"deleted_threshold": 0.2,
-  	"memmap_threshold": null,
-  	"max_segment_size": null,
-  	"vacuum_min_vector_number": 1000,
-  	"max_optimization_threads": null
-	},
-	"strict_mode_config": {
-  	"enabled": false
-	},
-	"params": {
-  	"vectors": {
-    	"distance": "Cosine",
-    	"size": 1536
-  	},
-  	"replication_factor": 1,
-  	"write_consistency_factor": 1,
-  	"on_disk_payload": true,
-  	"shard_number": 1
-	},
-	"wal_config": {
-  	"wal_segments_ahead": 0,
-  	"wal_capacity_mb": 32
-	}
+    "quantization_config": null,
+    "hnsw_config": {
+    "max_indexing_threads": 0,
+    "full_scan_threshold": 10000,
+    "on_disk": false,
+    "m": 16,
+    "ef_construct": 100
+    },
+    "optimizer_config": {
+    "indexing_threshold": 20000,
+    "flush_interval_sec": 5,
+    "default_segment_number": 0,
+    "deleted_threshold": 0.2,
+    "memmap_threshold": null,
+    "max_segment_size": null,
+    "vacuum_min_vector_number": 1000,
+    "max_optimization_threads": null
+    },
+    "strict_mode_config": {
+    "enabled": false
+    },
+    "params": {
+    "vectors": {
+        "distance": "Cosine",
+        "size": 1536
+    },
+    "replication_factor": 1,
+    "write_consistency_factor": 1,
+    "on_disk_payload": true,
+    "shard_number": 1
+    },
+    "wal_config": {
+    "wal_segments_ahead": 0,
+    "wal_capacity_mb": 32
+    }
   },
   "payload_schema": {
 
   }
 }
-
-CALL genai.vector.external.deleteCollection($qdrant_uri, $collection_name, $configuration)
-
 ----
+====
+
+.Delete a collection
+====
+[source, cypher]
+----
+CALL genai.vector.external.deleteCollection(
+    $qdrant_uri, // <.>
+    $collection, // <.>
+    $configuration // <.>
+)
+----
+
+<.> The external database URI.
+<.> The name of the collection to retrieve information of.
+<.> A map containing (at minimum) the API token to the external database.
+For more information, see xref:parameters[Preliminary parameters].
+====
 
 
 == Vector database provider details
