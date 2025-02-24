@@ -547,7 +547,3 @@ CALL genai.vector.external.deleteCollection(
 <.> A map containing (at minimum) the API token to the external database.
 For more information, see xref:parameters[Preliminary parameters].
 ====
-
-
-== Vector database provider details
-
