@@ -1,5 +1,5 @@
 name: plugin
-title: GenAI Plugin
+title: Neo4j GenAI Plugin
 version: '2025.02'
 start_page: ROOT:index.adoc
 nav:
