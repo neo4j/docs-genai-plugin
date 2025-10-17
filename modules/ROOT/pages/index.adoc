@@ -3,12 +3,14 @@
 
 = Introduction
 
-Neo4j's GenAI plugin creates vector embeddings and stores them either in a Neo4j database or in a remote vector database.
+Neo4j's GenAI plugin can be used to integrate with various third party providers:
 
-To create embeddings with the GenAI plugin you need an account and API credentials from any of the following GenAI providers: xref:reference.adoc#vertex-ai[Vertex AI], xref:reference.adoc#openai[OpenAI], xref:reference.adoc#azure-openai[Azure OpenAI], and xref:reference.adoc#amazon-bedrock[Amazon Bedrock].
+* Create vector embeddings based on text input.
+** TODO
+* Generate text.
+** xref:text/completion/text-completion-function.adoc[ai.text.completion]
 
-[TIP]
-To learn more about using embeddings in Neo4j, see link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes/#embeddings[Vector indexes -> Vectors and embeddings in Neo4j].
+To use the plugin you need an account and API credentials from any of the following GenAI providers: Vertex AI, OpenAI, Azure OpenAI, and Amazon Bedrock.
 
 [[installation]]
 == Installation

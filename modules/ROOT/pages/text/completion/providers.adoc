@@ -1,0 +1,71 @@
+= ai.text.complete.providers
+
+This procedure is used to find the supported providers to use with
+xref:text/completion/text-completion-function.adoc[ai.text.completion]
+in your database.
+
+.Details
+|===
+|    *Syntax*         3+| `ai.text.complete.providers() :: (index :: LONG, completion :: STRING)`
+|    *Description*    3+| Returns text completion providers and their configuration options.
+.5+| *Return arguments* | *Name*               | *Type*   | *Description*
+|                         `name`               | `STRING` | Provider name.
+|                         `requiredConfigType` | `STRING` | The signature of the required configuration options.
+|                         `optionalConfigType` | `STRING` | The signature of the optional configuration options.
+|                         `defaultConfig`      | `MAP`    | Default configuration option values.
+|===
+
+== Usage example
+
+.Query
+[source, cypher, indent=0]
+----
+CALL ai.text.complete.providers()
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1m,3l,3l,3l"]
+|===
+
+| name
+| requiredConfigType
+| optionalConfigType
+| defaultConfig
+| "OpenAI"
+| "{
+  token :: STRING NOT NULL,
+  model :: STRING NOT NULL
+}"
+| "{
+  vendorOptions :: MAP NOT NULL
+}"
+| { vendorOptions: {} }
+| "VertexAI"
+| "{
+  token :: STRING NOT NULL,
+  model :: STRING NOT NULL,
+  project :: STRING NOT NULL,
+  region :: STRING NOT NULL
+}"
+| "{
+  publisher :: STRING NOT NULL,
+  vendorOptions :: MAP NOT NULL
+}"
+| {
+  publisher: "google",
+  vendorOptions: {}
+}
+| "Bedrock-Nova"
+| "{
+  accessKeyId :: STRING NOT NULL,
+  secretAccessKey :: STRING NOT NULL,
+  region :: STRING NOT NULL,
+  model :: STRING NOT NULL
+}"
+| "{
+  vendorOptions :: MAP NOT NULL
+}"
+| { vendorOptions: {} }
+4+d|Rows: 3
+
+|===
