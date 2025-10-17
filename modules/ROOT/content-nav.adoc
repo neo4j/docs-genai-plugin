@@ -2,6 +2,7 @@
 
 * xref:neo4j-databases.adoc[]
 * xref:external-databases.adoc[]
+* xref:text/completion/text-completion-function.adoc[Generate text]
 * xref:reference.adoc[]
 
 
