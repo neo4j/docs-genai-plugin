@@ -64,6 +64,48 @@ RETURN ai.text.complete('Name a movie', 'openai', conf) AS result
 
 |===
 
+=== Azure OpenAI
+
+This provider can be used with Azure OpenAI.
+
+.OpenAI configuration parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model id (see https://platform.openai.com/docs/models).
+| `resource`      | `STRING` | -         | Azure resource name.
+| `token`         | `STRING` | -         | Azure OAuth2 bearer token.
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Azure.
+|===
+
+==== Usage example
+
+.Query
+[source, cypher, indent=0]
+----
+WITH
+  {
+    token: $azureToken,
+    resource: 'my-azure-openai-resource',
+    model: 'gpt-5-nano',
+    vendorOptions: {
+      max_output_tokens: 1024,
+      instructions: 'Be short.'
+    }
+  } AS conf
+RETURN ai.text.complete('Name a movie', 'openai', conf) AS result
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1*<m"]
+|===
+
+| result
+| "2001: A Space Odyssey"
+1+d|Rows: 1
+
+|===
+
 === Google Vertex AI
 
 .Vertex configuration parameters
