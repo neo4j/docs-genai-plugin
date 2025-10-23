@@ -1,30 +1,45 @@
 :page-role: function
 :table-caption!:
 
-= ai.text.complete
+= Generate text
 
-This function is used to generate text based on a provided prompt using third party AI providers.
+The ai.text.complete function can be used to generate text based on a provided textual input prompt.
 
-.Details
+
+.Function ai.text.complete signature
 |===
 |    *Syntax*        3+| `ai.text.complete(prompt, provider, configuration) :: STRING`
 |    *Description*   3+| Function to return generated text output based on the provided prompt.
 .4+| *Input arguments* | *Name*          | *Type*   | *Description*
 |                        `prompt`        | `STRING` | Textual prompt.
-|                        `provider`      | `STRING` | Name of the third party AI provider, see <providers section>.
-|                        `configuration` | `MAP`    | Provider specific configuration, see <providers section>.
+|                        `provider`      | `STRING` | Name of the third party AI provider, see xref:#providers[Providers].
+|                        `configuration` | `MAP`    | Provider specific configuration, see xref:#providers[Providers].
 | *Returns*          3+| Generated text based on the provided prompt.
 |===
 
+[[providers]]
 == Providers
 
 The function currently supports the following providers:
 
 - OpenAI (`openai`)
+- Azure OpenAI (`azure-openai`)
 - Google Vertex AI (`vertexai`)
 - Amazon Bedrock Nova Models (`bedrock-nova`)
 
-You can use query `CALL ai.text.completion.providers()` to retrieve a list of the providers supported in your database.
+You can use query `CALL ai.text.completion.providers()` to retrieve a list of the providers supported in your version of the plugin.
+
+.Procedure ai.text.completion.providers() signature
+|===
+|    *Syntax*         3+| `ai.text.complete.providers() :: (index :: LONG, completion :: STRING)`
+|    *Description*    3+| Returns text completion providers and their configuration options.
+.5+| *Return arguments* | *Name*               | *Type*   | *Description*
+|                         `name`               | `STRING` | Provider name.
+|                         `requiredConfigType` | `STRING` | The signature of the required configuration options.
+|                         `optionalConfigType` | `STRING` | The signature of the optional configuration options.
+|                         `defaultConfig`      | `MAP`    | Default configuration option values.
+|===
+
 
 === OpenAI
 
@@ -93,7 +108,7 @@ WITH
       instructions: 'Be short.'
     }
   } AS conf
-RETURN ai.text.complete('Name a movie', 'openai', conf) AS result
+RETURN ai.text.complete('Name a movie', 'azure-openai', conf) AS result
 ----
 
 .Result
@@ -200,3 +215,16 @@ RETURN ai.text.complete('Name a movie', 'bedrock-nova', conf) AS result
 This provider gives support for all models that uses the same request parameters and response fields as the Titan text models.
 
 Configuration and usage is similar to xref:#amazon-bedrock-nova[ai.text.completion].
+Note that titan models have different `vendorOptions`, see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-text.html.
+
+== Batch text completion
+
+To run text completion in parallel batches you can use unwind with parallel runtime:
+
+.Query
+[source, cypher, indent=0]
+----
+CYPHER runtime=parallell
+UNWIND $prompts AS prompt
+RETURN ai.text.complete(prompt, $provider, $providerConf) AS result
+----
