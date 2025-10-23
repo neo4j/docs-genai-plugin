@@ -6,7 +6,7 @@
 Neo4j's GenAI plugin can be used to integrate with various third party providers to perform AI tasks.
 
 * Create vector embeddings based on text input.
-* xref:text/completion/text-completion-function.adoc[Generate text].
+* xref:text/completion/text-completion.adoc[Generate text].
 
 To use the plugin you need an account and API credentials from any of the following GenAI providers: Vertex AI, OpenAI, Azure OpenAI, and Amazon Bedrock.
 
