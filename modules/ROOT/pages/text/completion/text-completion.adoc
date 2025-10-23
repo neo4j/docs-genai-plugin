@@ -1,4 +1,4 @@
-:page-role: function
+:page-role: new-neo4j-2025.11
 :table-caption!:
 
 = Generate text
