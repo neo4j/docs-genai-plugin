@@ -3,21 +3,18 @@
 
 = Introduction
 
-Neo4j's GenAI plugin can be used to integrate with various third party providers to perform AI tasks.
+Neo4j's GenAI plugin provides functions and procedures to interact with external AI providers through Cypher:
 
 * Create vector embeddings based on text input.
 * xref:text/completion/text-completion.adoc[Generate text].
 
-To use the plugin you need an account and API credentials from any of the following GenAI providers: Vertex AI, OpenAI, Azure OpenAI, and Amazon Bedrock.
+You can store and manipulate vector embeddings in Neo4j, but to interact with external AI providers (for example to create embeddings) you need an account and API credentials from one of the supported GenAI providers: xref:reference/ai-providers.adoc#vertex-ai[Vertex AI], xref:reference/ai-providers.adoc#openai[OpenAI], xref:reference/ai-providers.adoc#azure-openai[Azure OpenAI], and xref:reference/ai-providers.adoc#amazon-bedrock[Amazon Bedrock].
+
 
 [[installation]]
 == Installation
 
-The GenAI plugin is enabled by default in link:{neo4j-docs-base-uri}/aura/[Neo4j Aura].
+**In link:{neo4j-docs-base-uri}/aura/[Neo4j Aura]**, the GenAI plugin is enabled by default.
 
-The plugin needs to be installed on self-managed instances.
-This is done by moving the `neo4j-genai.jar` file from `/products` to `/plugins` in the Neo4j home directory, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
+**On self-managed instances**, you install the plugin by moving the `neo4j-genai.jar` file from `/products` to `/plugins` in the Neo4j home directory, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
 For more information, see link:{neo4j-docs-base-uri}/operations-manual/current/configuration/plugins/[Operations Manual -> Configure plugins].
-
-[NOTE]
-Prior to Neo4j 5.23, the GenAI plugin was only available on Neo4j Enterprise Edition.

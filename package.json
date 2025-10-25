@@ -1,35 +1,49 @@
 {
   "name": "genai-plugin",
-  "version": "2025.02",
+  "version": "2025.11",
   "description": "Neo4j GenAI Plugin docs",
   "main": "server.js",
   "scripts": {
+    "clean": "rm -rf build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm update && nodemon -e adoc --exec \"npm run build\" & npm run serve",
+    "start": "nodemon -e adoc --exec \"npm run build && npm run serve\"",
     "serve": "node server.js",
-    "adoc-gen": "node scripts/adoc-gen.js",
-    "build": "antora preview.yml --stacktrace --log-format=pretty",
+    "build": "antora --stacktrace preview.yml",
+    "publish": "antora --stacktrace publish.yml",
     "build-verify": "antora --stacktrace --fetch preview.yml --log-format=json --log-level=info --log-file ./build/log/log.json",
-    "publish-verify": "antora --stacktrace --fetch publish.yml --log-format=json --log-level=info --log-file ./build/log/log.json"
+    "publish-verify": "antora --stacktrace --fetch publish.yml --log-format=json --log-file ./build/log/log.json",
+    "lint": "node scripts/lint-links.js"
   },
-  "keywords": [
-    "antora",
-    "neo4j"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neo4j/docs-genai-plugin.git"
+  },
+  "keywords": [],
   "author": "Neo4j",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/neo4j/docs-genai-plugin/issues"
+  },
+  "homepage": "https://github.com/neo4j/docs-genai-plugin#readme",
   "dependencies": {
-    "antora": "^3.1.10",
-    "@neo4j-antora/aliases-redirects": "^0.2.3",
+    "@antora/cli": "^3.1.12",
+    "@antora/site-generator-default": "^3.1.12",
     "@neo4j-antora/antora-add-notes": "^0.3.1",
     "@neo4j-antora/antora-page-roles": "^0.3.2",
-    "@neo4j-antora/antora-table-footnotes": "^0.3.3",
-    "@neo4j-antora/mark-terms": "1.1.0",
-    "@neo4j-documentation/macros": "^1.0.4",
-    "@neo4j-documentation/remote-include": "^1.0.0"
+    "@neo4j-antora/antora-table-footnotes": "^0.3.2",
+    "@neo4j-documentation/macros": "^1.0.2",
+    "@neo4j-documentation/remote-include": "^1.0.0",
+    "js-yaml": "^4.1.0",
+    "simple-git": "^3.22.0",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
-    "express": "^4.21.2",
-    "nodemon": "^3.1.0"
+    "express": "^5.0.1",
+    "nodemon": "^3.0.2"
+  },
+  "overrides": {
+    "@antora/site-generator-default": {
+      "glob-parent": "6.0.2"
+    }
   }
 }
