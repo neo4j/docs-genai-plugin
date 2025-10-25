@@ -1,5 +1,4 @@
-:description: Information about Neo4j's GenAI plugin.
-:page-role: new-5.17
+:description: Neo4j's GenAI plugin provides functions and procedures to interact with external AI providers through Cypher.
 
 = Introduction
 

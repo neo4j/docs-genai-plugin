@@ -1,7 +1,7 @@
 site:
   title: Neo4j GenAI Plugin
   url: https://neo4j.com/docs/genai/
-  start_page: plugin:ROOT:index.adoc
+  start_page: genai-plugin:ROOT:index.adoc
 
 content:
   sources:
