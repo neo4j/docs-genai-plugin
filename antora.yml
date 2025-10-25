@@ -1,6 +1,6 @@
 name: plugin
 title: Neo4j GenAI Plugin
-version: '2025.02'
+version: '5'
 start_page: ROOT:index.adoc
 nav:
 - modules/ROOT/content-nav.adoc
