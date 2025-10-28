@@ -1,6 +1,43 @@
 = Functions and procedures
 
-.genai.vector.encodeBatch() label:function[]
+.ai.text.embed() label:function[]
+|===
+| *Syntax* 3+m| ai.text.embed(resource :: STRING, provider :: STRING, configuration = {} :: MAP) :: VECTOR
+| *Description* 3+a| Encode a given resource as a vector using the named provider.
+.4+| *Input arguments* | *Name* | *Type* | *Description*
+| `resources` | `LIST<STRING>` | The object to transform into an embedding.
+| `provider` | `STRING` | The identifier of the provider: ("VertexAI", "OpenAI", "AzureOpenAI", "Bedrock-Titan").
+| `configuration` | `MAP` | The provider specific settings.
+| *Returns* 3+| `VECTOR`
+|===
+
+.ai.text.embedBatch() label:procedure[]
+|===
+| *Syntax* 3+m| ai.text.embedBatch(resource :: STRING, provider :: STRING, configuration = {} :: MAP) :: (index :: INTEGER, resource :: STRING, vector :: VECTOR)
+| *Description* 3+a| Encode a given resource as a vector using the named provider.
+.4+| *Input arguments* | *Name* | *Type* | *Description*
+| `resources` | `LIST<STRING>` | The object to transform into an embedding.
+| `provider` | `STRING` | The identifier of the provider: ("VertexAI", "OpenAI", "AzureOpenAI", "Bedrock-Titan").
+| `configuration` | `MAP` | The provider specific settings.
+.4+| *Return arguments* | *Name* | *Type* | *Description*
+| `index` | `INTEGER` | The index of the corresponding element in the input list.
+| `resource` | `STRING` | The given input resource.
+| `vector` | `VECTOR` | The generated vector embedding for the resource.
+|===
+
+.ai.text.embed.providers() label:procedure[]
+|===
+| *Syntax* 3+m| ai.text.embed.providers() :: (name :: STRING, requiredConfigType :: STRING, optionalConfigType :: STRING, defaultConfig :: MAP)
+| *Description* 3+a| Lists the available vector embedding providers.
+.5+| *Return arguments* | *Name* | *Type* | *Description*
+| `name` | `STRING` | The name of the GenAI provider.
+| `requiredConfigType` | `STRING` | The signature of the required config map.
+| `optionalConfigType` | `STRING` | "The signature of the optional config map.
+| `defaultConfig` | `MAP` | The default values for the GenAI provider.
+|===
+
+
+.genai.vector.encode() label:function[] label:deprecated[]
 |===
 | *Syntax* 3+m| genai.vector.encode(resource :: STRING, provider :: STRING, configuration = {} :: ANY) :: ANY
 | *Description* 3+a| Encode a given resource as a vector using the named provider.
@@ -11,9 +48,9 @@
 | *Returns* 3+| `ANY`
 |===
 
-.genai.vector.encodeBatch() label:procedure[]
+.genai.vector.encodeBatch() label:procedure[] label:deprecated[]
 |===
-| *Syntax* 3+m| db.vector.encodeBatch(resources :: LIST<STRING>, provider :: STRING, configuration = {} :: ANY) :: (index :: INTEGER, resource :: STRING, vector :: ANY)
+| *Syntax* 3+m| genai.vector.encodeBatch(resources :: LIST<STRING>, provider :: STRING, configuration = {} :: ANY) :: (index :: INTEGER, resource :: STRING, vector :: ANY)
 | *Description* 3+a| Encode a given batch of resources as vectors using the named provider.
 .4+| *Input arguments* | *Name* | *Type* | *Description*
 | `resources` | `LIST<STRING>` | The object to transform into an embedding.
@@ -21,16 +58,11 @@
 | `configuration` | `MAP` | The provider specific settings.
 .4+| *Return arguments* | *Name* | *Type* | *Description*
 | `index` | `INTEGER` | The index of the corresponding element in the input list.
-| `resource` | `INTEGER` | The name of the input resource.
-| `vector` | `INTEGER` | The generated vector embedding for the resource.
+| `resource` | `STRING` | The given input resource.
+| `vector` | `ANY` | The generated vector embedding for the resource.
 |===
 
-[TIP]
-To store the embeddings created by the encoding functions as node/relationship properties, use the built-in procedures link:https://neo4j.com/docs/operations-manual/current/procedures/#procedure_db_create_setNodeVectorProperty[`db.create.setNodeVectorProperty`] and
-link:https://neo4j.com/docs/operations-manual/current/procedures/#procedure_db_create_setRelationshipVectorProperty[`db.create.setRelationshipVectorProperty`].
-Once stored as properties, they can be queried using link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes[vector indexes].
-
-.genai.vector.listEncodingProviders() label:procedure[]
+.genai.vector.listEncodingProviders() label:procedure[] label:deprecated[]
 |===
 | *Syntax* 3+m| genai.vector.listEncodingProviders() :: (name :: STRING, requiredConfigType :: STRING, optionalConfigType :: STRING, defaultConfig :: MAP)
 | *Description* 3+a| Lists the available vector embedding providers.

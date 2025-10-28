@@ -35,8 +35,7 @@ The embeddings on this page are generated using the link:https://platform.openai
 [.include-with-Store-embedding-as-a-vector]
 ======
 
-`genai.vector.encode()` returns a `LIST<FLOAT>`.
-To convert and store this value as a link:https://neo4j.com/docs/cypher-manual/25/values-and-types/vector/[`VECTOR`], use the link:https://neo4j.com/docs/cypher-manual/25/functions/vector/#functions-vector[`vector()`] function.
+`ai.text.embed()` returns a `VECTOR`.
 Storing `VECTOR` values on self-managed instances requires Enterprise Edition and link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format].
 
 .Create a `VECTOR` embedding property for the Godfather
@@ -45,8 +44,8 @@ Storing `VECTOR` values on self-managed instances requires Enterprise Edition an
 MATCH (m:Movie {title:'Godfather, The'})
 WHERE m.plot IS NOT NULL AND m.title IS NOT NULL
 WITH m, m.title || ' ' || m.plot AS titleAndPlot // <1>
-WITH m, genai.vector.encode(titleAndPlot, 'OpenAI', { token: $openaiToken }) AS vector // <2>
-SET m.embedding = vector(vector, 1536, FLOAT32) // <3>
+WITH m, ai.text.embed(titleAndPlot, 'OpenAI', { token: $openaiToken }) AS vector // <2>
+SET m.embedding = vector // <3>
 RETURN m.embedding AS embedding
 ----
 
@@ -98,8 +97,8 @@ The embeddings are stored as properties on nodes or relationships with the type 
 MATCH (m:Movie {title:'Godfather, The'})
 WHERE m.plot IS NOT NULL AND m.title IS NOT NULL
 WITH m, m.title || ' ' || m.plot AS titleAndPlot // <1>
-WITH m, genai.vector.encode(titleAndPlot, 'OpenAI', { token: $openaiToken }) AS vector // <2>
-CALL db.create.setNodeVectorProperty(m, 'embedding', vector) // <3>
+WITH m, ai.text.embed(titleAndPlot, 'OpenAI', { token: $openaiToken }) AS vector // <2>
+CALL db.create.setNodeVectorProperty(m, 'embedding', toFloatList(vector)) // <3>
 RETURN m.embedding AS embedding
 ----
 
@@ -124,7 +123,7 @@ RETURN m.embedding AS embedding
 [[multiple-embeddings]]
 == Generate a batch of embeddings and store them
 
-Use the `genai.vector.encodeBatch` procedure to generate many vector embeddings with a single API request.
+Use the `ai.text.embedBatch` procedure to generate many vector embeddings with a single API request.
 This procedure takes a list of resources as an input, and returns the same number of result rows.
 
 [IMPORTANT]
@@ -133,10 +132,10 @@ This procedure attempts to generate embeddings for all supplied resources in a s
 Check the respective provider's documentation for details on, for example, the maximum number of embeddings that can be generated per request.
 ====
 
-.Signature for `genai.vector.encodeBatch` label:procedure[]
+.Signature for `ai.text.embedBatch` label:procedure[]
 [source,syntax]
 ----
-genai.vector.encodeBatch(resources :: LIST<STRING>, provider :: STRING, configuration :: MAP = {}) :: (index :: INTEGER, resource :: STRING, vector :: LIST<FLOAT>)
+ai.text.embedBatch(resources :: LIST<STRING>, provider :: STRING, configuration :: MAP = {}) :: (index :: INTEGER, resource :: STRING, vector :: VECTOR)
 ----
 
 * The `resources` (a `LIST<STRING>`) parameter is the list of objects to transform into embeddings, such as chunks of text.
@@ -150,16 +149,15 @@ However, if the function call is misspelled or the query is otherwise malformed,
 Each returned row contains the following columns:
 
 * The `index` (an `INTEGER`) is the index of the corresponding element in the input list, to aid in correlating results back to inputs.
-* The `resource` (a `STRING`) is the name of the input resource.
-* The `vector` (a `LIST<FLOAT>`) is the generated vector embedding for this resource.
+* The `resource` (a `STRING`) is the given input resource.
+* The `vector` (a `VECTOR`) is the generated vector embedding for this resource.
 
 [.tabbed-example]
 ====
 [.include-with-Store-embeddings-as-vectors]
 ======
 
-`genai.vector.encode()` returns a `LIST<FLOAT>`.
-To convert and store this value as a link:https://neo4j.com/docs/cypher-manual/25/values-and-types/vector/[`VECTOR`], use the link:https://neo4j.com/docs/cypher-manual/25/functions/vector/#functions-vector[`vector()`] function.
+`ai.text.embed()` returns a `VECTOR`.
 Storing `VECTOR` values on an on-prem instance requires Enterprise Edition and link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format].
 
 .Create embeddings from a limited number of properties and store them as `VECTOR` properties
@@ -170,15 +168,15 @@ WITH m
 LIMIT 20
 WITH collect(m) AS moviesList // <1>
 WITH moviesList, [movie IN moviesList | movie.title || ': ' || movie.plot] AS batch // <2>
-CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
+CALL ai.text.embedBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
 WITH moviesList, index, vector
 MATCH (toUpdate:Movie {title: moviesList[index]['title']})
-SET toUpdate.embedding = vector(vector, 1536, FLOAT32)  // <3>
+SET toUpdate.embedding = vector  // <3>
 ----
 
 <1> link:https://neo4j.com/docs/cypher-manual/25/functions/aggregating/#functions-collect[Collect] all  20 `Movie` nodes into a `LIST<NODE>`.
 <2> A link:https://neo4j.com/docs/cypher-manual/25/expressions/list-expressions/#list-comprehension[list comprehension] (`[]`) extracts the `title` and `plot` properties of the movies in `moviesList` into a new `LIST<STRING>`.
-<3> `db.create.setNodeVectorProperty` is run for each `vector` returned by `genai.vector.encodeBatch()`, and stores that vector as a property named `embedding` on the corresponding node.
+<3> `SET` is run for each `vector` returned by `ai.text.embedBatch()`, and stores that vector as a property named `embedding` on the corresponding node.
 
 .Create embeddings from a large number properties and store them as `VECTOR` properties
 [source, cypher]
@@ -190,9 +188,9 @@ WITH collect(m) AS moviesList, // <1>
 UNWIND range(0, total-1, batchSize) AS batchStart // <3>
 CALL (moviesList, batchStart, batchSize) { // <4>
     WITH [movie IN moviesList[batchStart .. batchStart + batchSize] | movie.title || ': ' || movie.plot] AS batch // <5>
-    CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
+    CALL ai.text.embedBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
     MATCH (toUpdate:Movie {title: moviesList[batchStart + index]['title']})
-    SET toUpdate.embedding = vector(vector, 1536, FLOAT32) // <6>
+    SET toUpdate.embedding = vector // <6>
 } IN CONCURRENT TRANSACTIONS OF 1 ROW // <7>
 ----
 
@@ -249,14 +247,14 @@ WITH m
 LIMIT 20
 WITH collect(m) AS moviesList // <1>
 WITH moviesList, [movie IN moviesList | movie.title || ': ' || movie.plot] AS batch // <2>
-CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
+CALL ai.text.embedBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
 WITH moviesList, index, vector
-CALL db.create.setNodeVectorProperty(moviesList[index], 'embedding', vector) // <3>
+CALL db.create.setNodeVectorProperty(moviesList[index], 'embedding', toFloatList(vector)) // <3>
 ----
 
 <1> link:https://neo4j.com/docs/cypher-manual/25/functions/aggregating/#functions-collect[Collect] all  20 `Movie` nodes into a `LIST<NODE>`.
 <2> A link:https://neo4j.com/docs/cypher-manual/25/expressions/list-expressions/#list-comprehension[list comprehension] (`[]`) extracts the `title` and `plot` properties of the movies in `moviesList` into a new `LIST<STRING>`.
-<3> `db.create.setNodeVectorProperty` is run for each `vector` returned by `genai.vector.encodeBatch()`, and stores that vector as a property named `embedding` on the corresponding node.
+<3> `db.create.setNodeVectorProperty` is run for each `vector` returned by `ai.text.embedBatch()`, and stores that vector as a property named `embedding` on the corresponding node.
 
 .Create embeddings from a large number properties and store them as `LIST<FLOAT>` values
 [source, cypher]
@@ -268,8 +266,8 @@ WITH collect(m) AS moviesList, // <1>
 UNWIND range(0, total-1, batchSize) AS batchStart // <3>
 CALL (moviesList, batchStart, batchSize) { // <4>
     WITH [movie IN moviesList[batchStart .. batchStart + batchSize] | movie.title || ': ' || movie.plot] AS batch // <5>
-    CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
-    CALL db.create.setNodeVectorProperty(moviesList[batchStart + index], 'embedding', vector) // <6>
+    CALL ai.text.embedBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
+    CALL db.create.setNodeVectorProperty(moviesList[batchStart + index], 'embedding', toFloatList(vector)) // <6>
 } IN CONCURRENT TRANSACTIONS OF 1 ROW // <7>
 ----
 
