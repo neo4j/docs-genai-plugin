@@ -32,12 +32,12 @@
 .5+| *Return arguments* | *Name* | *Type* | *Description*
 | `name` | `STRING` | The name of the GenAI provider.
 | `requiredConfigType` | `STRING` | The signature of the required config map.
-| `optionalConfigType` | `STRING` | "The signature of the optional config map.
+| `optionalConfigType` | `STRING` | The signature of the optional config map.
 | `defaultConfig` | `MAP` | The default values for the GenAI provider.
 |===
 
 
-.genai.vector.encode() label:function[] label:deprecated[]
+.genai.vector.encode() label:function[] label:deprecated[Deprecated in Cypher 25]
 |===
 | *Syntax* 3+m| genai.vector.encode(resource :: STRING, provider :: STRING, configuration = {} :: ANY) :: ANY
 | *Description* 3+a| Encode a given resource as a vector using the named provider.

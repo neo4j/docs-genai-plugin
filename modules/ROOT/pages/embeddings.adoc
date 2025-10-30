@@ -35,7 +35,7 @@ The embeddings on this page are generated using the link:https://platform.openai
 [.include-with-Store-embedding-as-a-vector]
 ======
 
-`ai.text.embed()` returns a `VECTOR`.
+`ai.text.embed()` returns a link:https://neo4j.com/docs/cypher-manual/25/values-and-types/vector/[`VECTOR`].
 Storing `VECTOR` values on self-managed instances requires Enterprise Edition and link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format].
 
 .Create a `VECTOR` embedding property for the Godfather
