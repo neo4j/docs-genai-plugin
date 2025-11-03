@@ -2,6 +2,7 @@
 :test-setup-dump: https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26-block.dump
 
 
+[[create_and_store_embeddings_in_a_neo4j_database]]
 = Create and store embeddings in a Neo4j database
 
 Neo4j's link:{neo4j-docs-base-uri}/cypher-manual/current/indexes/semantic-indexes/vector-indexes[vector indexes] and link:{neo4j-docs-base-uri}/cypher-manual/current/functions/vector[vector functions] allow you to calculate the similarity between node and relationship properties in a graph.
