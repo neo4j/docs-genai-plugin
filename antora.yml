@@ -1,4 +1,4 @@
-name: genai-plugin
+name: plugin
 title: Neo4j GenAI Plugin
 version: '25'
 start_page: ROOT:index.adoc

@@ -3,9 +3,210 @@
 This page lists the supported AI providers.
 Each provider has its own configuration map that can be passed to Neo4j's GenAI function/procedures.
 
+[[text-embedding-ai-providers]]
+== Text Embedding AI Providers
+
+The following provider configurations are for the xref:reference/functions-procedures.adoc#ai-text-embed[`ai.text.embed`] function and the xref:reference/functions-procedures.adoc#ai-text-embed-batch[`ai.text.embedBatch`] procedure.
+
+The text embedding callables currently support the following providers:
+
+- OpenAI (`openai`)
+- Azure OpenAI (`azure-openai`)
+- Google Vertex AI (`vertexai`)
+- Amazon Bedrock Titan Models (`bedrock-titan`)
+
+The query `CALL ai.text.embed.providers()` shows you the list of the providers supported in the version of the plugin you are running.
+
+.ai.text.embed.providers() label:procedure[]
+|===
+| *Syntax* 3+m| ai.text.embed.providers() :: (name :: STRING, requiredConfigType :: STRING, optionalConfigType :: STRING, defaultConfig :: MAP)
+| *Description* 3+a| Lists the available vector embedding providers.
+.5+| *Return arguments* | *Name* | *Type* | *Description*
+| `name` | `STRING` | The name of the AI provider.
+| `requiredConfigType` | `STRING` | The signature of the required config map.
+| `optionalConfigType` | `STRING` | The signature of the optional config map.
+| `defaultConfig` | `MAP` | The default values for the GenAI provider.
+|===
+
+=== OpenAI
+
+.OpenAI configuration parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
+| `token`         | `STRING` | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Open AI (see https://platform.openai.com/docs/api-reference/embeddings/create[OpenAI -> Create embeddings]).
+|===
+
+==== Embed the string `Hello World!`
+
+.Query
+[source, cypher, test-result-skip]
+----
+WITH
+  {
+    token: $openaiToken,
+    model: 'text-embedding-ada-002',
+    vendorOptions: {
+      dimensions: 1024
+    }
+  } AS conf
+RETURN ai.text.embed('Hello World!', 'openai', conf) AS result
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1*<m"]
+|===
+
+| result
+| [0.0023064255, -0.009327292, .... (1024 coordinates total as requested), -0.0028842222]
+1+d|Rows: 1
+
+|===
+
+
+=== Azure OpenAI
+
+
+.OpenAI configuration parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model id (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
+| `resource`      | `STRING` | -         | Azure resource name.
+| `token`         | `STRING` | -         | Azure OAuth2 bearer token.
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Azure.
+|===
+
+==== Embed the string `Hello World!`
+
+.Query
+[source, cypher]
+----
+WITH
+  {
+    token: $azureToken,
+    resource: 'my-azure-openai-resource',
+    model: 'text-embedding-3-small',
+    vendorOptions: {
+      dimensions: 1024
+    }
+  } AS conf
+RETURN ai.text.embed('Hello World!', 'azure-openai', conf) AS result
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1*<m"]
+|===
+
+| result
+| [0.0023064255, -0.009327292, .... (1024 coordinates total as requested), -0.0028842222]
+1+d|Rows: 1
+
+|===
+
+=== Google Vertex AI
+
+.Vertex configuration parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
+| `project`       | `STRING` | -         | Google Cloud project ID.
+| `region`        | `STRING` | -         | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
+| `publisher`     | `STRING` | 'google'  | Model publisher.
+| `token`         | `STRING` | -         | Vertex API access token.
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Vertex (see https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1/projects.locations.publishers.models/predict[Vertex AI -> Method: models.predict]).
+|===
+
+==== Embed the string `Hello World!`
+
+.Query
+[source, cypher]
+----
+WITH
+  {
+    token: $vertexApiAccessKey,
+    model: 'gemini-embedding-001',
+    publisher: 'google',
+    project: 'my-google-cloud-project',
+    region: 'asia-northeast1',
+    vendorOptions: {
+      outputDimensionality: 1024
+    }
+  } AS conf
+RETURN ai.text.complete('Hello World!', 'vertexai', conf) AS result
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1*<m"]
+|===
+
+| result
+| [0.0023064255, -0.009327292, .... (1024 coordinates total as requested), -0.0028842222]
+1+d|Rows: 1
+
+|===
+
+[[amazon-bedrock-titan]]
+=== Amazon Bedrock Titan Models
+
+This provider gives support for all models that uses the same request parameters and response fields as the https://docs.aws.amazon.com/bedrock/latest/userguide/titan-embedding-models.html[Titan text models].
+
+.Amazon Bedrock Titan Configuration
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*            | *Type*   | *Default* | *Description*
+| `model`           | `STRING` | -         | Model ID or its ARN.
+| `region`          | `STRING` | -         | Amazon region (see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html[Amazon Bedrock -> Model Support]).
+| `accessKeyId`     | `STRING` | -         | Amazon access key id.
+| `secretAccessKey` | `STRING` | -         | Amazon secret access key.
+| `vendorOptions`   | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Bedrock (see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html[Amazon Bedrock -> Inference request parameters and response fields]).
+|===
+
+==== Embed the string `Hello World!`
+
+.Query
+[source, cypher]
+----
+WITH
+  {
+    accessKeyId: $awsAccessKeyId,
+    secretAccessKey: $secretAccessKey,
+    model: 'amazon.titan-embed-text-v1',
+    region: 'eu-west-2',
+    vendorOptions: {
+      dimensions: 1024
+    }
+  } AS conf
+RETURN ai.text.embed('Hello World!', 'bedrock-titan', conf) AS result
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="1*<m"]
+|===
+
+| result
+| [0.0023064255, -0.009327292, .... (1024 coordinates total as requested), -0.0028842222]
+1+d|Rows: 1
+
+|===
+
+[[vector-encoding-ai-providers]]
+== Vector Encoding AI Providers
+
+The following provider configurations are for the `genai.vector.encode` function and the `genai.vector.encodeBatch` procedure.
+
+The text embedding callables currently support the following providers:
+
+- OpenAI (`openai`)
+- Azure OpenAI (`azure-openai`)
+- Google Vertex AI (`vertexai`)
+- Amazon Bedrock Models (`bedrock`)
 
 [[openai]]
-== OpenAI
+=== OpenAI
 
 * Identifier (`provider` argument): `"OpenAI"`
 * https://platform.openai.com/docs/guides/embeddings[Official OpenAI documentation]
@@ -33,7 +234,7 @@ Each provider has its own configuration map that can be passed to Neo4j's GenAI 
 
 
 [[vertex-ai]]
-== Vertex AI
+=== Vertex AI
 
 * Identifier (`provider` argument): `"VertexAI"`
 * https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings[Official Vertex AI documentation]
@@ -123,7 +324,7 @@ Supported values: +
 
 
 [[azure-openai]]
-== Azure OpenAI
+=== Azure OpenAI
 
 * Identifier (`provider` argument): `"AzureOpenAI"`
 * https://learn.microsoft.com/en-us/azure/ai-foundry/[Official Azure OpenAI documentation]
@@ -159,7 +360,7 @@ Unlike the other providers, the model is configured when creating the deployment
 
 
 [[amazon-bedrock]]
-== Amazon Bedrock
+=== Amazon Bedrock
 
 * Identifier (`provider` argument): `"Bedrock"`
 * https://docs.aws.amazon.com/bedrock/latest/APIReference/welcome.html[Official Bedrock documentation]

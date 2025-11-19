@@ -1,7 +1,7 @@
 site:
   title: Neo4j GenAI Plugin
   url: https://neo4j.com/docs/genai/
-  start_page: genai-plugin:ROOT:index.adoc
+  start_page: plugin:ROOT:index.adoc
 
 content:
   sources:
@@ -21,13 +21,18 @@ ui:
 urls:
   html_extension_style: indexify
 
+antora:
+  extensions:
+  - "@neo4j-antora/aliases-redirects"
+  - "@neo4j-antora/roles-labels"
+  - "@neo4j-antora/table-footnotes"
+  - "@neo4j-antora/xref-hash-validator"
+
 asciidoc:
   extensions:
   - "@neo4j-documentation/remote-include"
   - "@neo4j-documentation/macros"
-  - "@neo4j-antora/antora-add-notes"
-  - "@neo4j-antora/antora-page-roles"
-  - "@neo4j-antora/antora-table-footnotes"
+  - "@neo4j-antora/mark-terms"
   attributes:
     page-theme: docs
     page-type: Docs
@@ -39,6 +44,7 @@ asciidoc:
     page-origin-private: false
     page-hide-toc: false
     page-mixpanel: 4bfb2414ab973c741b6f067bf06d5575
+    page-cdn: https://neo4j.com/docs/assets  # needed for UI assets to be loaded
     includePDF: false
     nonhtmloutput: ""
     experimental: ''
