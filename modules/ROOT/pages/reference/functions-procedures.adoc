@@ -1,5 +1,34 @@
 = Functions and procedures
 
+
+[[ai-text-completion]]
+[role=label--function]
+== ai.text.completion()
+|===
+|    *Syntax*        3+| `ai.text.completion(prompt, provider, configuration) :: STRING`
+|    *Description*   3+| Function to return generated text output based on the provided prompt.
+.4+| *Input arguments* | *Name*          | *Type*   | *Description*
+|                        `prompt`        | `STRING` | Textual prompt.
+|                        `provider`      | `STRING` | Name of the third party AI provider, see xref:generate-text.adoc#providers[Generate text -> Providers].
+|                        `configuration` | `MAP`    | Provider specific configuration, see xref:generate-text.adoc#providers[Generate text -> Providers].
+| *Returns*          3+| Generated text based on the provided prompt.
+|===
+
+
+[[ai-text-completion-providers]]
+[role=label--procedure]
+== ai.text.completion.providers()
+|===
+|    *Syntax*         3+| `ai.text.completion.providers() :: (index :: LONG, completion :: STRING)`
+|    *Description*    3+| Returns text completion providers and their configuration options.
+.5+| *Return arguments* | *Name*               | *Type*   | *Description*
+|                         `name`               | `STRING` | Provider name.
+|                         `requiredConfigType` | `STRING` | The signature of the required configuration options.
+|                         `optionalConfigType` | `STRING` | The signature of the optional configuration options.
+|                         `defaultConfig`      | `MAP`    | Default configuration option values.
+|===
+
+
 [[ai-text-embed]]
 [role=label--function]
 == ai.text.embed()
@@ -13,6 +42,7 @@
 | `configuration` | `MAP` | The provider specific settings.
 | *Returns* 3+| `VECTOR`
 |===
+
 
 [[ai-text-embed-batch]]
 [role=label--procedure]
@@ -31,6 +61,7 @@
 | `vector` | `VECTOR` | The generated vector embedding for the resource.
 |===
 
+
 [[ai-text-embed-providers]]
 [role=label--procedure]
 == ai.text.embed.providers()
@@ -45,6 +76,7 @@
 | `defaultConfig` | `MAP` | The default values for the GenAI provider.
 |===
 
+
 [[genai-vector-encode]]
 [role=label--function label--deprecated-Cypher-25]
 == genai.vector.encode()
@@ -58,6 +90,7 @@
 | `configuration` | `MAP` | The provider specific settings.
 | *Returns* 3+| `ANY`
 |===
+
 
 [[genai-vector-encode-batch]]
 [role=label--procedure label--deprecated-Cypher-25]
@@ -75,6 +108,7 @@
 | `resource` | `STRING` | The given input resource.
 | `vector` | `ANY` | The generated vector embedding for the resource.
 |===
+
 
 [[genai-vector-list-encoding-providers]]
 [role=label--procedure label--deprecated-Cypher-25]

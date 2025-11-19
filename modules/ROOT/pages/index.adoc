@@ -5,7 +5,7 @@
 Neo4j's GenAI plugin provides functions and procedures to interact with external AI providers through Cypher:
 
 * Create vector embeddings based on text input.
-* xref:text/completion/text-completion.adoc[Generate text].
+* xref:generate-text.adoc[Generate text].
 
 You can store and manipulate vector embeddings in Neo4j, but to interact with external AI providers (for example to create embeddings) you need an account and API credentials from one of the supported GenAI providers: xref:reference/ai-providers.adoc#vertex-ai[Vertex AI], xref:reference/ai-providers.adoc#openai[OpenAI], xref:reference/ai-providers.adoc#azure-openai[Azure OpenAI], and xref:reference/ai-providers.adoc#amazon-bedrock[Amazon Bedrock].
 

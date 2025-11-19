@@ -1,0 +1,393 @@
+:page-role: new---2025.11
+:table-caption!:
+
+= Generate text
+
+The function `ai.text.completion` can be used to generate text based on a textual input prompt.
+
+.Signature for `ai.text.completion`
+|===
+|    *Syntax*        3+| `ai.text.completion(prompt, provider, configuration) :: STRING`
+|    *Description*   3+| Function to return generated text output based on the provided prompt.
+.4+| *Input arguments* | *Name*          | *Type*   | *Description*
+|                        `prompt`        | `STRING` | Textual prompt.
+|                        `provider`      | `STRING` | Name of the third party AI provider, see xref:#providers[Providers].
+|                        `configuration` | `MAP`    | Provider specific configuration, see xref:#providers[Providers].
+| *Returns*          3+| Generated text based on the provided prompt.
+|===
+
+
+== Example
+
+[.tabbed-example]
+====
+[.include-with-OpenAI]
+======
+The example below selects the 5 top-rated movies, joins their titles and plots into a single, newline-separated string, and asks the external AI provider to pick the most child-friendly one.
+
+[source, cypher, test-result-skip]
+----
+MATCH (n:Movie) WHERE n.imdbRating IS NOT NULL
+ORDER BY n.imdbRating DESC LIMIT 5  // <.>
+WITH n.title || ': ' || n.plot AS movie  // <.>
+WITH
+  reduce(acc = '', item IN collect(movie) | acc || item || '\n') AS movies,  // <.>
+  {
+    token: $openaiToken,
+    model: 'gpt-5-nano',
+    vendorOptions: {
+      max_output_tokens: 500,
+      instructions: 'Be short.'
+    }
+  } AS config  // <.>
+RETURN ai.text.completion(
+    'Here is a list of movies with their titles and plots. Recommend the most child-friendly one.\n\n' || movies,  // <.>
+    'openai',
+    config
+) AS result
+----
+
+<.> Pick the 5 top-rated movies.
+<.> Join title and plot as `<title>: <plot>`.
+<.> Join all movies into a single, newline-separated string.
+<.> Provider specific configuration, see xref:#providers-openai[Providers -> OpenAI].
+<.> Prompt for the AI model.
+
+[role="queryresult",options="header",cols="1"]
+|===
+
+| result
+| "Cosmos. It’s an educational, non-graphic science documentary about the universe, making it the most child-friendly option here (parental guidance for younger kids)."
+
+|===
+
+======
+
+[.include-with-Azure-OpenAI]
+======
+
+The example below selects the 5 top-rated movies, joins their titles and plots into a single, newline-separated string, and asks the external AI provider to pick the most child-friendly one.
+
+[source, cypher, test-skip]
+----
+MATCH (n:Movie) WHERE n.imdbRating IS NOT NULL
+ORDER BY n.imdbRating DESC LIMIT 5  // <.>
+WITH n.title || ': ' || n.plot AS movie  // <.>
+WITH
+  reduce(acc = '', item IN collect(movie) | acc || item || '\n') AS movies,  // <.>
+  {
+    token: $azureOpenaiToken,
+    resource: '<azure-openai-resource>',
+    model: 'gpt-5-nano',
+    vendorOptions: {
+      max_output_tokens: 500,
+      instructions: 'Be short.'
+    }
+  } AS config  // <.>
+RETURN ai.text.completion(
+    'Here is a list of movies with their titles and plots. Recommend the most child-friendly one.\n\n' || movies,  // <.>
+    'azure-openai',
+    config
+) AS result
+----
+
+<.> Pick the 5 top-rated movies.
+<.> Join title and plot as `<title>: <plot>`.
+<.> Join all movies into a single, newline-separated string.
+<.> Provider specific configuration, see xref:#providers-azure-openai[Providers -> Azure OpenAI].
+<.> Prompt for the AI model.
+
+[role="queryresult",options="header",cols="1"]
+|===
+
+| result
+| "Cosmos. It’s an educational, non-graphic science documentary about the universe, making it the most child-friendly option here (parental guidance for younger kids)."
+
+|===
+
+======
+
+[.include-with-VertexAI]
+======
+
+The example below selects the 5 top-rated movies, joins their titles and plots into a single, newline-separated string, and asks the external AI provider to pick the most child-friendly one.
+
+[source, cypher, test-skip]
+----
+MATCH (n:Movie) WHERE n.imdbRating IS NOT NULL
+ORDER BY n.imdbRating DESC LIMIT 5  // <.>
+WITH n.title || ': ' || n.plot AS movie  // <.>
+WITH
+  reduce(acc = '', item IN collect(movie) | acc || item || '\n') AS movies,  // <.>
+  {
+    token: $vertexaiToken,
+    model: 'gemini-2.5-flash-lite',
+    publisher: 'google',
+    project: '<google-cloud-project>',
+    region: '<gcp-region>',
+    vendorOptions: {
+      systemInstruction: 'Be short.',
+      generationConfig: {
+        maxOutputTokens: 500
+      }
+    }
+  } AS conf  // <.>
+RETURN ai.text.completion(
+    'Here is a list of movies with their titles and plots. Recommend the most child-friendly one.\n\n' || movies,  // <.>
+    'vertexai',
+    config
+) AS result
+----
+
+<.> Pick the 5 top-rated movies.
+<.> Join title and plot as `<title>: <plot>`.
+<.> Join all movies into a single, newline-separated string.
+<.> Provider specific configuration, see xref:#providers-vertexai[Providers -> VertexAI].
+<.> Prompt for the AI model.
+
+[role="queryresult",options="header",cols="1"]
+|===
+
+| result
+| "The most child-friendly movie is Cosmos.
+
+It is an educational documentary about space, lacking the violence and mature themes of the other options.
+
+Would you like to know the recommended age range for Cosmos?"
+
+|===
+
+======
+
+[.include-with-Amazon-Bedrock-Nova]
+======
+
+The example below selects the 5 top-rated movies, joins their titles and plots into a single, newline-separated string, and asks the external AI provider to pick the most child-friendly one.
+
+[source, cypher, test-skip]
+----
+MATCH (n:Movie) WHERE n.imdbRating IS NOT NULL
+ORDER BY n.imdbRating DESC LIMIT 5  // <.>
+WITH n.title || ': ' || n.plot AS movie  // <.>
+WITH
+  reduce(acc = '', item IN collect(movie) | acc || item || '\n') AS movies,  // <.>
+  {
+    accessKeyId: $awsAccessKeyId,
+    secretAccessKey: $secretAccessKey,
+    model: 'amazon.nova-micro-v1:0',
+    region: '<region>',
+    vendorOptions: {
+      system: [{ text: 'Be short' }],
+      inferenceConfig: { maxTokens: 1024 }
+    }
+  } AS conf  // <.>
+RETURN ai.text.completion(
+    'Here is a list of movies with their titles and plots. Recommend the most child-friendly one.\n\n' || movies,  // <.>
+    'bedrock-nova',
+    config
+) AS result
+----
+
+<.> Pick the 5 top-rated movies.
+<.> Join title and plot as `<title>: <plot>`.
+<.> Join all movies into a single, newline-separated string.
+<.> Provider specific configuration, see xref:#providers-bedrock-nova[Providers -> Amazon Bedrock Nova].
+<.> Prompt for the AI model.
+
+[role="queryresult",options="header",cols="1"]
+|===
+
+| result
+| "Cosmos is the most child-friendly. It's an educational series about space and science, perfect for young minds."
+
+|===
+
+======
+
+====
+
+
+== Run multiple requests in parallel
+
+To run text completion for several prompts in parallel, you have two options:
+
+1. Use link:https://neo4j.com/docs/cypher-manual/current/subqueries/subqueries-in-transactions/#concurrent-transactions[`CALL {...} IN CONCURRENT TRANSACTIONS`], with 1 row per transaction: +
++
+[source, cypher]
+----
+WITH ['Name a movie', 'Name a book'] AS prompts
+UNWIND prompts AS prompt
+CALL(prompt) {
+  WITH
+  {
+    token: $openaiToken,
+    model: 'gpt-5-nano'
+  } AS config
+  RETURN ai.text.completion(prompt, 'openai', config) AS response
+} IN CONCURRENT TRANSACTIONS OF 1 ROW
+RETURN response
+----
++
+2. Use link:https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/runtimes/concepts/#runtimes-parallel-runtime[Cypher's parallel runtime]: label:enteprise-edition[] +
++
+[source, cypher]
+----
+CYPHER runtime=parallel
+WITH
+  {
+    token: $openaiToken,
+    model: 'gpt-5-nano'
+  } AS config,
+  ['Name a movie', 'Name a book'] AS prompts
+UNWIND prompts AS prompt
+RETURN ai.text.completion(prompt, 'openai', config) AS result
+----
+
+
+[[providers]]
+== Providers
+
+Generating text is currently possible with the following providers:
+
+- OpenAI (`openai`)
+- Azure OpenAI (`azure-openai`)
+- Google Vertex AI (`vertexai`)
+- Amazon Bedrock Nova Models (`bedrock-nova`)
+
+You can use query `CALL ai.text.completion.providers()` (see xref:reference/functions-procedures.adoc#ai-text-completion-providers[reference]) to retrieve a list of the providers supported in your version of the plugin.
+
+
+[[providers-openai]]
+=== OpenAI
+
+.OpenAI parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
+| `token`         | `STRING` | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to OpenAI (see https://platform.openai.com/docs/api-reference/responses/create[OpenAI -> Create a model response]).
+|===
+
+.Usage example
+[source, cypher]
+----
+WITH
+  {
+    token: $openaiToken,
+    model: 'gpt-5-nano',
+    vendorOptions: {
+      max_output_tokens: 1024,
+      instructions: 'Be short.'
+    }
+  } AS conf
+RETURN ai.text.complete('Name a movie', 'openai', conf) AS result
+----
+
+
+[[providers-azure-openai]]
+=== Azure OpenAI
+
+.Azure OpenAI parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model ID (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
+| `resource`      | `STRING` | -         | Azure resource name.
+| `token`         | `STRING` | -         | Azure OAuth2 bearer token.
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Azure.
+|===
+
+.Usage example
+[source, cypher, test-skip]
+----
+WITH
+  {
+    token: $azureToken,
+    resource: 'my-azure-openai-resource',
+    model: 'gpt-5-nano',
+    vendorOptions: {
+      max_output_tokens: 1024,
+      instructions: 'Be short.'
+    }
+  } AS conf
+RETURN ai.text.complete('Name a movie', 'azure-openai', conf) AS result
+----
+
+
+[[providers-vertexai]]
+=== Google Vertex AI
+
+.VertexAI parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*          | *Type*   | *Default* | *Description*
+| `model`         | `STRING` | -         | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
+| `project`       | `STRING` | -         | Google cloud project ID.
+| `region`        | `STRING` | -         | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
+| `publisher`     | `STRING` | 'google'  | Model publisher.
+| `token`         | `STRING` | -         | Vertex API access token.
+| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to VertexAI (see https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1/projects.locations.publishers.models/generateContent[Vertex AI -> Method: models.generateContent]).
+|===
+
+.Usage example
+[source, cypher, test-skip]
+----
+WITH
+  {
+    token: $vertexaiApiAccessKey,
+    model: 'gemini-2.5-flash-lite',
+    publisher: 'google',
+    project: 'my-google-cloud-project',
+    region: 'asia-northeast1',
+    vendorOptions: {
+      labels: { someLabel: 'bla' },
+      systemInstruction: 'Be short.'
+    }
+  } AS conf
+RETURN ai.text.complete('Name a movie', 'vertexai', conf) AS result
+----
+
+
+[[providers-bedrock-nova]]
+=== Amazon Bedrock Nova Models
+
+This provider supports all models that use the same request parameters and response fields as the Nova text models.
+
+.Amazon Bedrock Nova parameters
+[opts=header, cols="1,1,1,3"]
+|===
+| *Name*            | *Type*   | *Default* | *Description*
+| `model`           | `STRING` | -         | Model ID or its ARN.
+| `region`          | `STRING` | -         | Amazon region (see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html[Amazon Bedrock -> Model Support]).
+| `accessKeyId`     | `STRING` | -         | Amazon access key ID.
+| `secretAccessKey` | `STRING` | -         | Amazon secret access key.
+| `vendorOptions`   | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Bedrock (see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html[Amazon Bedrock -> Inference request parameters and response fields]).
+|===
+
+.Usage example
+[source, cypher]
+----
+WITH
+  {
+    accessKeyId: $awsAccessKeyId,
+    secretAccessKey: $secretAccessKey,
+    model: 'amazon.nova-micro-v1:0',
+    region: 'eu-west-2',
+    vendorOptions: {
+      system: [{ text: 'Be short' }],
+      inferenceConfig: { maxTokens: 1024 }
+    }
+  } AS conf
+RETURN ai.text.complete('Name a movie', 'bedrock-nova', conf) AS result
+----
+
+
+[[providers-bedrock-titan]]
+=== Amazon Bedrock Titan Models
+
+This provider supports all models that use the same request parameters and response fields as the Titan text models.
+Configuration and usage is similar to xref:providers-bedrock-nova[Bedrock Nova Models].
+
+[NOTE]
+Titan models have different `vendorOptions`, see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-titan-text.html[Amazon Bedrock -> Titan Text Models].
