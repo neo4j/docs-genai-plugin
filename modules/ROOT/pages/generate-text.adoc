@@ -4,6 +4,7 @@
 = Generate text
 
 The function `ai.text.completion` can be used to generate text based on a textual input prompt.
+It is similar to submitting a prompt to an LLM.
 
 .Signature for `ai.text.completion`
 |===
