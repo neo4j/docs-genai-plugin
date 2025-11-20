@@ -1,7 +1,7 @@
 * xref:index.adoc[]
 
 * xref:embeddings.adoc[]
-* xref:text/completion/text-completion.adoc[Generate text]
+* xref:generate-text.adoc[]
 
 * *Reference*
 
