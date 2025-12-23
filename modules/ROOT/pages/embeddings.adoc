@@ -85,7 +85,7 @@ The embeddings are stored as properties on nodes or relationships with the type 
 ----
 MATCH (m:Movie {title:'Godfather, The'})
 WHERE m.plot IS NOT NULL AND m.title IS NOT NULL
-WITH m, m.title || ' ' || m.plot AS titleAndPlot // <1>
+WITH m, m.title + ' ' + m.plot AS titleAndPlot // <1>
 WITH m, genai.vector.encode(titleAndPlot, 'OpenAI', { token: $openaiToken }) AS propertyVector // <2>
 CALL db.create.setNodeVectorProperty(m, 'embedding', propertyVector) // <3>
 RETURN m.embedding AS embedding
@@ -149,7 +149,7 @@ MATCH (m:Movie WHERE m.plot IS NOT NULL)
 WITH m
 LIMIT 20
 WITH collect(m) AS moviesList // <1>
-WITH moviesList, [movie IN moviesList | movie.title || ': ' || movie.plot] AS batch // <2>
+WITH moviesList, [movie IN moviesList | movie.title + ': ' + movie.plot] AS batch // <2>
 CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
 WITH moviesList, index, vector
 CALL db.create.setNodeVectorProperty(moviesList[index], 'embedding', vector) // <3>
@@ -171,7 +171,7 @@ WITH collect(m) AS moviesList, // <1>
      100 AS batchSize // <2>
 UNWIND range(0, total-1, batchSize) AS batchStart // <3>
 CALL (moviesList, batchStart, batchSize) { // <4>
-    WITH [movie IN moviesList[batchStart .. batchStart + batchSize] | movie.title || ': ' || movie.plot] AS batch // <5>
+    WITH [movie IN moviesList[batchStart .. batchStart + batchSize] | movie.title + ': ' + movie.plot] AS batch // <5>
     CALL genai.vector.encodeBatch(batch, 'OpenAI', { token: $openaiToken }) YIELD index, vector
     CALL db.create.setNodeVectorProperty(moviesList[batchStart + index], 'embedding', vector) // <6>
 } IN CONCURRENT TRANSACTIONS OF 1 ROW // <7>
