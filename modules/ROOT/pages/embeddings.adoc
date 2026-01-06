@@ -188,7 +188,7 @@ Note that this `CALL` subquery uses a link:{neo4j-docs-base-uri}/cypher-manual/c
 If you are using an older version of Neo4j, use an link:{neo4j-docs-base-uri}/cypher-manual/current/subqueries/call-subquery/#importing-with[importing `WITH` clause] instead.
 <5> `batch` is a list of strings, each being the concatenation of `title` and `plot` of one movie.
 <6> The procedure sets `vector` as value for the property named `embedding` for the node at position `batchStart + index` in the `moviesList`.
-<7> Set to `1` the amount of batches to be processed at once (see link:{neo4j-docs-base-uri}/cypher-manual/current/subqueries/subqueries-in-transaction/#concurrent-transactions[`CALL` subqueries -> Concurrent transactions]).
+<7> Set to `1` the amount of batches to be processed at once (see link:{neo4j-docs-base-uri}/cypher-manual/current/subqueries/subqueries-in-transactions/#concurrent-transactions[`CALL` subqueries -> Concurrent transactions]).
 
 [NOTE]
 This example may not scale to larger datasets, as `collect(m)` requires the whole result set to be loaded in memory.
