@@ -14,3 +14,15 @@ To use the plugin's features, you need an account and API credentials from one o
 
 **On self-managed instances**, you install the plugin by moving the `neo4j-genai.jar` file from `<NEO4J_HOME>/products` to `<NEO4J_HOME>/plugins`, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
 For more information, see link:{neo4j-docs-base-uri}/operations-manual/current/configuration/plugins/[Operations Manual -> Configure plugins].
+
+
+[[setup]]
+== Environment setup
+
+The examples in this manual use the link:https://github.com/neo4j-graph-examples/recommendations[Neo4j movie recommendations] dataset, mostly focusing on the `plot` and `title` properties of `Movie` nodes.
+There are 9083 `Movie` nodes with a `plot` and `title` property.
+
+image::genai-graph.svg[Example graph connecting person and actor nodes with a movie node via acted in and directed relationships,width=600,role=popup]
+
+To recreate the graph, download and import this link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26.dump[dump file] into an empty Neo4j database.
+Dump files can be imported for both link:{neo4j-docs-base-uri}/aura/auradb/importing/import-database/[Aura] and link:{neo4j-docs-base-uri}/operations-manual/current/backup-restore/restore-dump/[self-managed] instances.

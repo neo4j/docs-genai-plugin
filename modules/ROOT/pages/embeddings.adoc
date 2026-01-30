@@ -13,21 +13,6 @@ This page shows how these embeddings can be created and stored as properties on 
 For a hands-on guide on how to use the GenAI plugin on a Neo4j database, see link:https://neo4j.com/docs/genai/tutorials/embeddings-vector-indexes/[Embeddings & Vector Indexes Tutorial -> Create embeddings with cloud AI providers].
 
 
-[[example-graph]]
-== Example graph
-
-The examples on this page use the link:https://github.com/neo4j-graph-examples/recommendations[Neo4j movie recommendations] dataset, focusing on the `plot` and `title` properties of `Movie` nodes.
-There are 9083 `Movie` nodes with a `plot` and `title` property.
-
-image::genai-graph.svg[Example graph connecting person and actor nodes with a movie node via acted in and directed relationships,width=600,role=popup]
-
-To recreate the graph, download and import this link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26-block.dump[dump file] into an empty Neo4j database.
-Dump files can be imported for both link:{neo4j-docs-base-uri}/aura/auradb/importing/import-database/[Aura] and link:{neo4j-docs-base-uri}/operations-manual/current/backup-restore/restore-dump/[self-managed] instances.
-
-[NOTE]
-The embeddings on this page are generated using the link:https://platform.openai.com/docs/guides/embeddings[OpenAI] model `text-embedding-3-small`.
-
-
 [[single-embedding]]
 == Generate and store a single embedding
 

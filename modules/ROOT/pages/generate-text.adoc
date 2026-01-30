@@ -6,17 +6,6 @@
 
 = Generate text & Chat
 
-[[setup]]
-== Environment setup
-
-The examples on this page use the link:https://github.com/neo4j-graph-examples/recommendations[Neo4j movie recommendations] dataset, focusing on the `plot` and `title` properties of `Movie` nodes.
-There are 9083 `Movie` nodes with a `plot` and `title` property.
-
-image::genai-graph.svg[Example graph connecting person and actor nodes with a movie node via acted in and directed relationships,width=600,role=popup]
-
-To recreate the graph, download and import this link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26.dump[dump file] into an empty Neo4j database.
-Dump files can be imported for both link:{neo4j-docs-base-uri}/aura/auradb/importing/import-database/[Aura] and link:{neo4j-docs-base-uri}/operations-manual/current/backup-restore/restore-dump/[self-managed] instances.
-
 
 [[generate-once]]
 [role=label--new-2025.11]
