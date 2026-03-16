@@ -296,7 +296,7 @@ For an alternative method more suitable to processing large amounts of data, see
 [[providers]]
 == Providers
 
-You can crate vector embeddings via the following providers:
+You can create vector embeddings via the following providers:
 
 - OpenAI (`openai`)
 - Azure OpenAI (`azure-openai`)
