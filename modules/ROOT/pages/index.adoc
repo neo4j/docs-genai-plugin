@@ -13,5 +13,5 @@ You can store and manipulate vector embeddings in Neo4j, but to interact with ex
 
 **In link:{neo4j-docs-base-uri}/aura/[Neo4j Aura]**, the GenAI plugin is enabled by default.
 
-**On self-managed instances**, you install the plugin by moving the `neo4j-genai.jar` file from `/products` to `/plugins` in the Neo4j home directory, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
+**On self-managed instances**, you install the plugin by moving the `neo4j-genai-plugin-<version>.jar` file from `<NEO4J_HOME>/products` to `<NEO4J_HOME>/plugins`, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
 For more information, see link:{neo4j-docs-base-uri}/operations-manual/current/configuration/plugins/[Operations Manual -> Configure plugins].
