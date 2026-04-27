@@ -12,7 +12,7 @@ To use the plugin's features, you need an account and API credentials from one o
 
 **In link:https://neo4j.com/product/auradb/[Neo4j Aura]**, the GenAI plugin is enabled by default.
 
-**On self-managed instances**, you install the plugin by moving the `neo4j-genai.jar` file from `<NEO4J_HOME>/products` to `<NEO4J_HOME>/plugins`, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
+**On self-managed instances**, you install the plugin by moving the `neo4j-genai-plugin-<version>.jar` file from `<NEO4J_HOME>/products` to `<NEO4J_HOME>/plugins`, or, if you are using Docker, by starting the Docker container with the extra parameter `--env NEO4J_PLUGINS='["genai"]'`.
 For more information, see link:{neo4j-docs-base-uri}/operations-manual/current/configuration/plugins/[Operations Manual -> Configure plugins].
 
 [IMPORTANT]
