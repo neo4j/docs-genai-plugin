@@ -8,8 +8,9 @@ permissions:
 on:
   pull_request_target:
     branches:
-      - main
-      - dev
+      - 'dev'
+      - 'cypher-25'
+      - 'cypher-5'
     types:
       - closed
 

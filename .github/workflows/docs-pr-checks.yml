@@ -7,8 +7,9 @@ permissions:
 on:
   pull_request:
     branches:
-      - main
-      - dev
+      - 'dev'
+      - 'cypher-25'
+      - 'cypher-5'
 
 jobs:
 

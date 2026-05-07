@@ -9,8 +9,9 @@ permissions:
 on:
   push:
     branches:
-    - 'dev'
-    - 'main'
+      - 'dev'
+      - 'cypher-25'
+      - 'cypher-5'
   workflow_dispatch:
 
 # change `dev` and `main` according to your repository's branch names
@@ -19,7 +20,7 @@ on:
 # in some cases, PROD_BRANCH and DEV_BRANCH may be the same branch
 env:
   DEV_BRANCH: 'dev'
-  PROD_BRANCH: 'main'
+  PROD_BRANCH: 'cypher-25'
 
 jobs:
 
