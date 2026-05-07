@@ -687,7 +687,7 @@ CALL(prompt) {
 RETURN response
 ----
 +
-2. Use link:https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/runtimes/concepts/#runtimes-parallel-runtime[Cypher's parallel runtime]: label:enteprise-edition[] +
+2. Use link:https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/runtimes/concepts/#runtimes-parallel-runtime[Cypher's parallel runtime]: label:enterprise-edition[] +
 +
 [source, cypher]
 ----
