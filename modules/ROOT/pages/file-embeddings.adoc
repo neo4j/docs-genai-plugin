@@ -1,0 +1,209 @@
+:description: `ai.file.embedBatch` is used to embed text read from a file in batches as vectors using an AI provider.
+:table-caption!:
+:page-role: new--2025.05
+
+
+= Create and store file embeddings
+
+== Overview
+
+The `ai.file.embedBatch` procedure reads text from a local or remote file and generates vector embeddings for its content, optionally splitting it in chunks. It returns one row for each chunk, containing its index, the chunk content, and its embedding vector.
+
+[source, cypher]
+----
+CALL ai.file.embedBatch(
+  'https://example.com/large-document.txt', // <1>
+  'OpenAI', // <2>
+  { token: $openaiToken, model: 'text-embedding-3-small' }, // <3>
+  1000 // <4>
+) YIELD index, resource, vector
+MERGE (n:Chunk {id: index})
+SET n.text = resource, n.embedding = vector
+----
+
+<1> The path or URL of the source file.
+Both local and remote URLs (`http`, `https`, or `ftp`) are supported.
+Local paths are resolved relative to the Neo4j installation folder.
+<2> Identifier of the AI provider to use.
+If the given model is not supported, OpenAI's `ada` model is used.
+<3> Provider-specific configuration.
+<4> The maximum token count for each chunk.
+
+
+
+[NOTE]
+====
+Accessing files with `ai.file.embedBatch` requires link:{neo4j-docs-base-uri}/operations-manual/current/authentication-authorization/load-privileges/[load privileges].
+====
+
+.Signature for `ai.file.embedBatch()`
+[role=label--procedure label--new-2026.05]
+[cols="1,1,1,3"]
+|===
+|    *Syntax*        3+| `ai.file.embedBatch(file, provider, configuration = {}, tokenCountLimit = null) :: (index, resource, vector)`
+|    *Description*   3+| Embed a given file in batches of resources as vectors using the named provider.
+
+.5+| *Inputs* | *Name* | *Type* | *Description*
+   | `file`
+   | `STRING`
+   | The path or URL of the file to read.
+
+   | `provider`
+   | `STRING`
+   | Identifier of the AI provider to use. See xref:embeddings.adoc#providers[Embeddings -> Providers] for supported options.
+
+   | `configuration`
+   | `MAP`
+   | Provider-specific configuration. Use `CALL ai.text.embed.providers()` to find the configuration needed for each provider.
+
+   | `tokenCountLimit`
+   | `INTEGER`
+   | The maximum token count limit for each chunk. If `null` (default), chunking is not applied.
+
+.4+| *Returns* | *Name* | *Type* | *Description*
+   | `index`
+   | `INTEGER`
+   | The index of the corresponding chunk within the list of resources.
+
+   | `resource`
+   | `STRING`
+   | The original resource element (the chunk text).
+
+   | `vector`
+   | `VECTOR`
+   | The generated vector embedding for the resource.
+|===
+
+
+.Chunking behavior
+[NOTE]
+====
+* If `tokenCountLimit` is `null`, the entire file content is embedded as a single resource.
+* If `tokenCountLimit` is provided, the file content is chunked into a list of resources, each within the token count limit.
+====
+
+
+[#examples]
+== Examples
+
+[#example-local]
+[role=label--not-on-aura]
+=== Import local files
+
+You can store files on the database server and access them by using the `+file:///+` schema.
+By default, paths are resolved relative to the Neo4j import directory.
+
+.Embed text from a local file
+====
+
+.document.txt
+[source, text, filename="document.txt"]
+----
+Neo4j is a graph database management system.
+It is designed to store and process large-scale graphs.
+Graph databases are well-suited for highly connected data.
+----
+
+.Query
+[source, cypher]
+----
+CALL ai.file.embedBatch(
+  'file:///document.txt',
+  'OpenAI',
+  { token: $openaiToken, model: 'text-embedding-3-small' }
+) YIELD index, resource, vector
+MERGE (c:Chunk {file: 'document.txt', index: index})
+SET c.text = resource, c.embedding = vector
+RETURN index, resource, vector
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="3*<m"]
+|===
+| index | resource                                                     | vector
+| 0     | 'Neo4j is a graph database management system.'               | [0.0052, -0.0393, ...]
+| 1     | 'It is designed to store and process large-scale graphs.'    | [0.0123, -0.0045, ...]
+| 2     | 'Graph databases are well-suited for highly connected data.' | [0.0089, 0.0212, ...]
+3+d|3 rows
+
+Added 3 nodes, Set 6 properties, Added 3 labels
+|===
+====
+
+.Configuration settings for file URLs
+[NOTE]
+====
+link:{neo4j-docs-base-uri}/operations-manual/current/configuration/configuration-settings#config_dbms.security.allow_csv_import_from_file_urls[dbms.security.allow_csv_import_from_file_urls]::
+Whether `+file:///+` URLs are allowed.
+
+link:{neo4j-docs-base-uri}/operations-manual/current/configuration/configuration-settings#config_server.directories.import[server.directories.import]::
+The path relative to which `+file:///+` URLs are parsed.
+====
+
+
+[#example-remote]
+=== Import from a remote location
+
+`ai.file.embedBatch` can embed text from a file hosted on a remote path.
+It supports accessing files via HTTPS, HTTP, and FTP (with or without credentials).
+It also follows redirects, except those changing the protocol (for security reasons).
+
+.Embed text from a remote file via HTTPS
+====
+
+.https://example.com/document.txt
+[source, text, filename="document.txt"]
+----
+Neo4j GenAI plugin can read this file.
+You can generate embeddings from it.
+----
+
+.Query
+[source, cypher, test-skip]
+----
+CALL ai.file.embedBatch(
+  'https://example.com/document.txt',
+  'OpenAI',
+  { token: $openaiToken, model: 'text-embedding-3-small' }
+) YIELD index, resource, vector
+RETURN index, resource, vector
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="3*<m"]
+|===
+| index | resource                                                                       | vector
+| 0     | 'Neo4j GenAI plugin can read this file.\nYou can generate embeddings from it.' | [0.0052, -0.0393, ...]
+3+d|1 row
+|===
+====
+
+
+.Embed text from a remote file via FTP using credentials
+====
+
+.\ftp://<username>:<password>@<domain>/documents/file.txt
+[source, text, filename="file.txt"]
+----
+This is a file hosted on an FTP server.
+----
+
+.Query
+[source, cypher, role=test-skip]
+----
+CALL ai.file.embedBatch(
+  'ftp://<username>:<password>@<domain>/documents/file.txt',
+  'OpenAI',
+  { token: $openaiToken, model: 'text-embedding-3-small' }
+) YIELD index, resource, vector
+RETURN index, resource, vector
+----
+
+.Result
+[role="queryresult",options="header,footer",cols="3*<m"]
+|===
+| index | resource                                  | vector
+| 0     | 'This is a file hosted on an FTP server.' | [0.0052, -0.0393, ...]
+3+d|1 row
+|===
+====

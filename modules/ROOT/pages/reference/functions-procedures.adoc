@@ -8,6 +8,27 @@ For more information, see link:https://neo4j.com/docs/cypher-manual/current/func
 Most GenAI features are available only in Cypher 25.
 If your database's default language is Cypher 5, prepend the query with `CYPHER 25` to override the default for that query (see link:https://neo4j.com/docs/cypher-manual/current/queries/select-version/[Cypher -> Select Cypher version]).
 
+
+[[ai-file-embed-batch]]
+[role=label--procedure label--new-2026.05 label--Cypher-25]
+== ai.file.embedBatch()
+|===
+|    *Syntax*        3+| `ai.file.embedBatch(file, provider, configuration = {}, tokenCountLimit = null) :: (index, resource, vector)`
+|    *Description*   3+| Embed a given file in batches of resources as vectors using the named provider.
+.5+| *Input arguments* | *Name*            | *Type*    | *Description*
+|                        `file`             | `STRING`  | The path or URL of the file to be read.
+|                        `provider`         | `STRING`  | The identifier of the provider: 'Azure-OpenAI', 'Bedrock-Titan', 'OpenAI', 'VertexAI'.
+|                        `configuration`    | `MAP`     | Provider specific configuration.
+|                        `tokenCountLimit`  | `INTEGER` | The maximum token count limit for each chunk, if `null`, chunking will not be applied. Default is `null`.
+.4+| *Returns*          | *Name*            | *Type*    | *Description*
+|                        `index`            | `INTEGER` | The index of the corresponding element in the input list.
+|                        `resource`         | `STRING`  | The name of the input resource.
+|                        `vector`           | `VECTOR`  | The generated vector embedding for the resource.
+|===
+
+For usage examples, see xref:file-embeddings.adoc[].
+
+
 [[ai-text-aggregate-completion]]
 [role=label--function label--new-2026.03 label--Cypher-25]
 == ai.text.aggregateCompletion()

@@ -46,7 +46,8 @@ However, if the function call is misspelled or the query is otherwise malformed,
 
 [NOTE]
 This function sends one API request every time it is called, which may result in a lot of overhead in terms of both network traffic and latency.
-If you want to generate many embeddings at once, use xref:multiple-embeddings[].
+If you want to generate many embeddings at once, use xref:multiple-embeddings[] or xref:file-embeddings.adoc[].
+If you want to read text from a file and embed it, see xref:file-embeddings.adoc[].
 
 The examples below use the recommendations dataset described in xref:index.adoc#setup[Environment setup].
 Choose the tab that matches the setup you selected there.

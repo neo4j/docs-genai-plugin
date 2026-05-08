@@ -16,6 +16,29 @@ Cypher 25 was introduced in Neo4j 2025.06 and can only be used on Neo4j 2025.06+
 For more information, see link:{neo4j-docs-base-uri}/cypher-manual/25/queries/select-version[Cypher Manual -> Select Cypher version].
 
 
+
+[[neo4j-2026.05]]
+== Neo4j 2026.05
+
+=== New in Cypher 25
+
+[cols="2", options="header"]
+|===
+| Feature
+| Details
+
+a|
+[source, cypher]
+----
+CALL ai.file.embedBatch(file, provider, configuration, tokenCountLimit)
+----
+| New procedure xref:reference/functions-procedures.adoc#ai-file-embed-batch[`ai.file.embedBatch()`] to read and embed text from a file (local or URL) in batches.
+
+See xref:file-embeddings.adoc[].
+
+|===
+
+
 [[neo4j-2026.04]]
 == Neo4j 2026.04
 
