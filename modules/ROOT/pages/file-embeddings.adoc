@@ -12,7 +12,7 @@ The `ai.file.embedBatch` procedure reads text from a local or remote file and ge
 [source, cypher]
 ----
 CALL ai.file.embedBatch(
-  'https://example.com/large-document.txt', // <1>
+  'https://neo4j.com/llms.txt', // <1>
   'OpenAI', // <2>
   { token: $openaiToken, model: 'text-embedding-3-small' }, // <3>
   1000 // <4>
@@ -28,8 +28,6 @@ Local paths are resolved relative to the Neo4j installation folder.
 If the given model is not supported, OpenAI's `ada` model is used.
 <3> Provider-specific configuration.
 <4> The maximum token count for each chunk.
-
-
 
 [NOTE]
 ====
@@ -73,7 +71,6 @@ Accessing files with `ai.file.embedBatch` requires link:{neo4j-docs-base-uri}/op
    | `VECTOR`
    | The generated vector embedding for the resource.
 |===
-
 
 .Chunking behavior
 [NOTE]
