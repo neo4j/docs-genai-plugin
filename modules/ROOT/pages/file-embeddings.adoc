@@ -148,7 +148,7 @@ It also follows redirects, except those changing the protocol (for security reas
 .Embed text from a remote file via HTTPS
 ====
 
-.https://example.com/document.txt
+.\https://example.com/document.txt
 [source, text, filename="document.txt"]
 ----
 Neo4j GenAI plugin can read this file.
