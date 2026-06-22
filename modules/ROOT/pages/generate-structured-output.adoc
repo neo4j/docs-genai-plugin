@@ -955,7 +955,7 @@ a| Uses a strict subset of JSON Schema. See the https://platform.openai.com/docs
 * Supported types include `string`, `number`, `boolean`, `integer`, `object`, `array`, `enum`, and `anyOf`.
 
 | **Vertex AI**
-a| Uses a subset of the OpenAPI 3.0 Schema Object. See the https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.cachedContents#Schema[VertexAI docs] for more info.
+a| Uses a subset of the OpenAPI 3.0 Schema Object. See the https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest/Shared.Types/Schema[VertexAI docs] for more info.
 
 * Best suited for flat or moderately nested structures.
 * Ensure you check for specific keyword support (e.g., `nullable`).
