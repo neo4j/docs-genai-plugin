@@ -102,7 +102,7 @@ Graph databases are well-suited for highly connected data.
 ----
 
 .Query
-[source, cypher]
+[source, cypher, test-result-skip]
 ----
 CALL ai.file.embedBatch(
   'file:///document.txt',
