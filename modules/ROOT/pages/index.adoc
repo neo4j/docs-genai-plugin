@@ -1,6 +1,10 @@
-:description: Neo4j's GenAI plugin provides functions to interact with external AI providers through Cypher (create vector embeddings, generate text).
-
+ifdef::backend-pdf[]
+= Neo4j GenAI Plugin {page-version}
+endif::[]
+ifndef::backend-pdf[]
 = Introduction
+:description: Neo4j's GenAI plugin provides functions to interact with external AI providers through Cypher (create vector embeddings, generate text).
+endif::[]
 
 Neo4j's GenAI plugin provides functions and procedures to interact with external AI providers through Cypher, such as for creating vector embeddings and generating text.
 
