@@ -2,6 +2,7 @@
 
 * xref:embeddings.adoc[]
 * xref:file-embeddings.adoc[]
+* xref:image-embeddings.adoc[]
 * xref:generate-text.adoc[]
 * xref:generate-structured-output.adoc[]
 * xref:count-tokens.adoc[]

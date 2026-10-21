@@ -29,6 +29,57 @@ If your database's default language is Cypher 5, prepend the query with `CYPHER 
 For usage examples, see xref:file-embeddings.adoc[].
 
 
+[[ai-image-embed]]
+[role=label--function label--new-2026.06 label--Cypher-25]
+== ai.image.embed()
+|===
+|    *Syntax*        3+| `ai.image.embed(resource, provider, configuration = {}) :: VECTOR`
+|    *Description*   3+| Encode a given image as a vector using the named provider.
+.4+| *Input arguments* | *Name*          | *Type*   | *Description*
+|                        `resource`      | `STRING` | The image to transform into an embedding: either base64-encoded image bytes, a local file path (`\file:///path/to/image`), or a remote URL (`http`/`https`/`ftp`).
+|                        `provider`      | `STRING` | The identifier of the provider: 'Bedrock-Titan', 'VertexAI'.
+|                        `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.image.embed.providers()` to find the configuration needed for each provider. You can specify additional vendor options by adding `vendorOptions` with a map of values that will be passed along in the request.
+2+| *Returns*                            | `VECTOR` | The generated vector embedding for the resource.
+|===
+
+For usage examples, see xref:image-embeddings.adoc#image-single-embedding[Image embeddings -> Generate a single image embedding].
+
+
+[[ai-image-embed-providers]]
+[role=label--procedure label--new-2026.06 label--Cypher-25]
+== ai.image.embed.providers()
+|===
+|    *Syntax*         3+| `ai.image.embed.providers() :: (name, requiredConfigType, optionalConfigType, defaultConfig)`
+|    *Description*    3+| Returns available image vector embedding providers and their configuration options.
+.5+| *Return arguments* | *Name*               | *Type*   | *Description*
+|                         `name`               | `STRING` | Provider name.
+|                         `requiredConfigType` | `STRING` | The signature of the required configuration options.
+|                         `optionalConfigType` | `STRING` | The signature of the optional configuration options.
+|                         `defaultConfig`      | `MAP`    | Default configuration option values.
+|===
+
+For provider details and examples, see xref:image-embeddings.adoc#image-providers[Image embeddings -> Image embedding providers].
+
+
+[[ai-image-embed-batch]]
+[role=label--procedure label--new-2026.06 label--Cypher-25]
+== ai.image.embedBatch()
+|===
+|    *Syntax*        3+| `CALL ai.image.embedBatch(resources, provider, configuration = {}) YIELD index, resource, vector`
+|    *Description*   3+| Encode a given batch of images as vectors using the named provider.
+.4+| *Input arguments* | *Name*          | *Type*         | *Description*
+|                        `resources`     | `LIST<STRING>` | The images to transform into embeddings: base64-encoded image bytes, local file paths (`\file:///path/to/image`), or remote URLs (`http`/`https`/`ftp`).
+|                        `provider`      | `STRING`       | The identifier of the provider: 'Bedrock-Titan', 'VertexAI'.
+|                        `configuration` | `MAP`          | Provider specific configuration, use `CALL ai.image.embed.providers()` to find the configuration needed for each provider. You can specify additional vendor options by adding `vendorOptions` with a map of values that will be passed along in the request.
+.4+| *Return arguments* | *Name*         | *Type*         | *Description*
+|                         `index`        | `INTEGER`      | The index of the corresponding element in the input list.
+|                         `resource`     | `STRING`       | The resolved 'resource' element (base64 bytes).
+|                         `vector`       | `VECTOR`       | The generated vector embedding for the resource.
+|===
+
+For usage examples, see xref:image-embeddings.adoc#image-batch-embedding[Image embeddings -> Generate a batch of image embeddings].
+
+
 [[ai-text-aggregate-completion]]
 [role=label--function label--new-2026.03 label--Cypher-25]
 == ai.text.aggregateCompletion()

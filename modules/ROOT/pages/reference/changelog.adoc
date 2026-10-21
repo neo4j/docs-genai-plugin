@@ -15,6 +15,31 @@ This section lists all of the features that have been removed, deprecated, added
 Cypher 25 was introduced in Neo4j 2025.06 and can only be used on Neo4j 2025.06+ databases.
 For more information, see link:{neo4j-docs-base-uri}/cypher-manual/25/queries/select-version[Cypher Manual -> Select Cypher version].
 
+[[neo4j-2026.06]]
+== Neo4j 2026.06
+
+=== New in Cypher 25
+
+[cols="2", options="header"]
+|===
+| Feature
+| Details
+
+a|
+[source, cypher]
+----
+RETURN ai.image.embed(resource, provider, configuration)
+
+CALL ai.image.embedBatch(resources, provider, configuration)
+
+CALL ai.image.embed.providers() YIELD name, requiredConfigType, optionalConfigType, defaultConfig
+----
+| New function xref:reference/functions-procedures.adoc#ai-image-embed[`ai.image.embed()`] and procedure xref:reference/functions-procedures.adoc#ai-image-embed-batch[`ai.image.embedBatch()`] for generating vector embeddings from images (base64, local files, or remote URLs).
+New procedure xref:reference/functions-procedures.adoc#ai-image-embed-providers[`ai.image.embed.providers()`] to list available image embedding providers.
+
+See xref:image-embeddings.adoc[].
+
+|===
 
 
 [[neo4j-2026.05]]
