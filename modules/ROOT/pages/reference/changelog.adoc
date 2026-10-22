@@ -41,6 +41,36 @@ See xref:image-embeddings.adoc[].
 
 |===
 
+[[neo4j-2026.11]]
+== Neo4j 2026.11
+
+=== New in Cypher 25
+
+[cols="2", options="header"]
+|===
+| Feature
+| Details
+
+a|
+[source, cypher]
+----
+RETURN ai.text.classify(input, choices, provider, configuration)
+
+RETURN ai.text.score(input, levels, provider, configuration)
+
+RETURN ai.text.predicate(input, condition, provider, configuration)
+
+RETURN ai.text.decide(input, questions, provider, configuration)
+
+CALL ai.text.decide.providers() YIELD name, requiredConfigType, optionalConfigType, defaultConfig
+----
+| New functions xref:reference/functions-procedures.adoc#ai-text-classify[`ai.text.classify()`], xref:reference/functions-procedures.adoc#ai-text-score[`ai.text.score()`], xref:reference/functions-procedures.adoc#ai-text-predicate[`ai.text.predicate()`], and xref:reference/functions-procedures.adoc#ai-text-decide[`ai.text.decide()`] to classify text, score it on an ordered scale, or evaluate conditions about it, with probabilities.
+New procedure xref:reference/functions-procedures.adoc#ai-text-decide-providers[`ai.text.decide.providers()`] to display the available providers and their config setup.
+
+See xref:decide-text.adoc[].
+
+|===
+
 
 [[neo4j-2026.05]]
 == Neo4j 2026.05

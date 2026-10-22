@@ -214,6 +214,90 @@ For usage examples, see xref:generate-text.adoc#chat-with-context[Chat with cont
 For provider details and examples, see xref:generate-text.adoc#providers[Generate text -> Providers].
 
 
+[[ai-text-classify]]
+[role=label--function label--new-2026.11 label--Cypher-25]
+== ai.text.classify()
+|===
+|    *Syntax*        3+| `ai.text.classify(input, choices, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Classify the input to one of the given choices, with probabilities.
+.5+| *Input arguments* | *Name* | *Type* | *Description*
+| `input`         | `STRING` | The text to classify.
+| `choices`       | `LIST<STRING>` or `MAP` | The options to classify the input to. Either a list of options, or a map of option to a description of it.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can override the default classification instruction by adding `instructions` with a `STRING`.
+2+| *Returns* | `MAP` | Contains `choice`, `confidence`, and `probabilities`.
+|===
+
+For usage examples, see xref:decide-text.adoc#classify[Classify text].
+
+
+[[ai-text-decide]]
+[role=label--function label--new-2026.11 label--Cypher-25]
+== ai.text.decide()
+|===
+|    *Syntax*        3+| `ai.text.decide(input, questions, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Answer a set of predicate, choice and score questions about the input, with probabilities.
+.5+| *Input arguments* | *Name* | *Type* | *Description*
+| `input`         | `STRING` | The text to answer the questions about.
+| `questions`     | `MAP`    | A map of question name to question. Each question has a `type` ('predicate', 'choice' or 'score') and `instructions`.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider.
+2+| *Returns* | `MAP` | A map of question name to answer.
+|===
+
+For usage examples, see xref:decide-text.adoc#decide[Decide several questions at once].
+
+
+[[ai-text-decide-providers]]
+[role=label--procedure label--new-2026.11 label--Cypher-25]
+== ai.text.decide.providers()
+|===
+|    *Syntax*        3+| `ai.text.decide.providers() :: (name, requiredConfigType, optionalConfigType, defaultConfig)`
+|    *Description*   3+| Lists the available decision providers and their configuration options.
+.5+| *Return arguments* | *Name* | *Type* | *Description*
+| `name` | `STRING` | Provider name.
+| `requiredConfigType` | `STRING` | The signature of the required configuration options.
+| `optionalConfigType` | `STRING` | The signature of the optional configuration options.
+| `defaultConfig` | `MAP` | Default configuration option values.
+|===
+
+For provider details, see xref:decide-text.adoc#decide-providers[Classify, score, and decide on text -> Providers].
+
+
+[[ai-text-predicate]]
+[role=label--function label--new-2026.11 label--Cypher-25]
+== ai.text.predicate()
+|===
+|    *Syntax*        3+| `ai.text.predicate(input, condition, provider, configuration = {}) :: FLOAT`
+|    *Description*   3+| Evaluate a condition about the input, giving the probability that it is true.
+.5+| *Input arguments* | *Name* | *Type* | *Description*
+| `input`         | `STRING` | The text to evaluate the condition about.
+| `condition`     | `STRING` | The condition to evaluate, as a yes/no question or statement.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can describe what true and false mean by adding `criteria` with a map of optional `true` and `false` `STRING` descriptions. `criteria` is not supported by the OpenAI provider, which rejects it with an error.
+2+| *Returns* | `FLOAT` | The probability that the condition is true of the input.
+|===
+
+For usage examples, see xref:decide-text.adoc#predicate[Evaluate a condition].
+
+
+[[ai-text-score]]
+[role=label--function label--new-2026.11 label--Cypher-25]
+== ai.text.score()
+|===
+|    *Syntax*        3+| `ai.text.score(input, levels, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Score the input on the given levels, with probabilities.
+.5+| *Input arguments* | *Name* | *Type* | *Description*
+| `input`         | `STRING` | The text to score.
+| `levels`        | `LIST`   | The levels to score the input on, ordered lowest first. Either a list of levels, or a list of single entry maps of level to a description of it.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can override the default scoring instruction by adding `instructions` with a `STRING`.
+2+| *Returns* | `MAP` | Contains `score`, `confidence`, and `probabilities`.
+|===
+
+For usage examples, see xref:decide-text.adoc#score[Score text].
+
+
 [[ai-text-embed]]
 [role=label--function label--new-2025.11 label--Cypher-25]
 == ai.text.embed()

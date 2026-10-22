@@ -1,0 +1,413 @@
+:description: Classify, score, and answer yes/no questions about text with probabilities, using AI providers.
+:table-caption!:
+:test-setup-dump: https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26-block.dump
+
+= Classify, score, and decide on text
+
+The functions `ai.text.classify`, `ai.text.score`, `ai.text.predicate`, and `ai.text.decide` ask an AI provider to make a judgment about a piece of text.
+Instead of free-form text, they return structured answers with probabilities, so that you can filter, rank, or threshold on how confident the provider is.
+
+[cols="1,2,2"]
+|===
+| Function | Question it answers | Returns
+
+| `ai.text.classify`
+| Which one of these options fits the text?
+| `MAP` with `choice`, `confidence`, and `probabilities`.
+
+| `ai.text.score`
+| Where does the text fall on this ordered scale?
+| `MAP` with `score`, `confidence`, and `probabilities`.
+
+| `ai.text.predicate`
+| Is this condition true of the text?
+| `FLOAT`, the probability that the condition is true.
+
+| `ai.text.decide`
+| Several of the above at once, in a single request.
+| `MAP` of question name to answer.
+|===
+
+`ai.text.classify`, `ai.text.score`, and `ai.text.predicate` are shorthand for `ai.text.decide` with a single question.
+They take the same providers and configuration.
+
+[NOTE]
+These functions are available only in Cypher 25.
+They are not available on Cypher 5 unless you prepend the query with `CYPHER 25`.
+
+The examples on this page use the `plot` property of `Movie` nodes from the xref:index.adoc#setup[example dataset].
+The results shown are illustrative: the output depends on the provider and model you use.
+
+
+[[null-handling]]
+== Common behavior
+
+* If `input` is `null`, the function returns `null` and no request is made to the provider.
+* The `provider` and `configuration` arguments are validated even when `input` is `null`, so a misconfigured call fails consistently.
+* Probabilities are numbers reported by the provider, where `1.0` means certain.
+* The `probabilities` map has one entry per option, in the order the options were given.
+* `confidence` is the provider's confidence in the selected `choice` or `score`.
+* Any call to the provider that fails, or a response that does not match the questions, causes the function to fail with an error.
+
+
+[[classify]]
+[role=label--new-2026.11]
+== Classify text
+
+.Signature for `ai.text.classify`
+[role=label--function label--new-2026.11]
+[cols="1,1,1,3"]
+|===
+|    *Syntax*        3+| `ai.text.classify(input, choices, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Classify the input to one of the given choices, with probabilities.
+.5+| *Inputs* | *Name*          | *Type*   | *Description*
+| `input`         | `STRING`              | The text to classify.
+| `choices`       | `LIST<STRING>` or `MAP` | The options to classify the input to. Either a list of options, or a map of option to a description of it.
+| `provider`      | `STRING`              | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`                 | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can override the default classification instruction by adding `instructions` with a `STRING`.
+.4+| *Returns* | *Key*           | *Type*   | *Description*
+| `choice`        | `STRING`              | The selected option.
+| `confidence`    | `FLOAT`               | The confidence in the selected option.
+| `probabilities` | `MAP`                 | The probability of each option, keyed by option.
+|===
+
+Choices must be unique and not empty.
+When you give choices as a map, the descriptions help the provider to tell similar options apart.
+
+[[classify-examples]]
+=== Examples
+
+[[classify-list]]
+.Classify with a list of choices
+=====
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m.plot AS plot, {
+  token: $token,
+  model: $model
+} AS config
+RETURN ai.text.classify(plot, ['action', 'comedy', 'romance', 'documentary'], 'OpenAI', config) AS result
+----
+
+[role="queryresult",options="header",cols="1"]
+|===
+| result
+| {choice: "action", confidence: 0.97, probabilities: {action: 0.98, comedy: 0.01, romance: 0.01, documentary: 0.0}}
+|===
+=====
+
+[[classify-map]]
+.Classify with described choices and custom instructions
+=====
+This example describes each choice and replaces the default instruction.
+
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m.plot AS plot, {
+  token: $token,
+  model: $model,
+  instructions: 'Which audience is this movie best suited to?'
+} AS config
+RETURN ai.text.classify(
+  plot,
+  {
+    family: 'Suitable for all ages.',
+    teen: 'Suitable for teenagers and older.',
+    adult: 'Contains mature themes.'
+  },
+  'OpenAI',
+  config
+).choice AS audience
+----
+
+[role="queryresult",options="header",cols="1"]
+|===
+| audience
+| "adult"
+|===
+=====
+
+
+[[score]]
+[role=label--new-2026.11]
+== Score text
+
+.Signature for `ai.text.score`
+[role=label--function label--new-2026.11]
+[cols="1,1,1,3"]
+|===
+|    *Syntax*        3+| `ai.text.score(input, levels, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Score the input on the given levels, with probabilities.
+.5+| *Inputs* | *Name*          | *Type*   | *Description*
+| `input`         | `STRING`        | The text to score.
+| `levels`        | `LIST`          | The levels to score the input on, ordered lowest first. Either a list of levels, or a list of single entry maps of level to a description of it.
+| `provider`      | `STRING`        | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`           | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can override the default scoring instruction by adding `instructions` with a `STRING`.
+.4+| *Returns* | *Key*           | *Type*   | *Description*
+| `score`         | `FLOAT`         | The score of the input as a position on the scale, where `0` is the first (lowest) level. A fractional value falls between levels, weighted by their probabilities.
+| `confidence`    | `FLOAT`         | The confidence in the score.
+| `probabilities` | `MAP`           | The probability of each level, keyed by level.
+|===
+
+The order of `levels` matters: it defines the scale from lowest to highest.
+Levels must be unique and not empty.
+Because a map does not retain its order, `levels` must be a list; to describe a level, use a single entry map such as `{High: 'Needs immediate action.'}` as the list element.
+
+[[score-examples]]
+=== Examples
+
+[[score-list]]
+.Score on a list of levels
+=====
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m.plot AS plot, {
+  token: $token,
+  model: $model,
+  instructions: 'How much violence does this plot describe?'
+} AS config
+RETURN ai.text.score(plot, ['None', 'Mild', 'Moderate', 'Intense'], 'OpenAI', config) AS result
+----
+
+[role="queryresult",options="header",cols="1"]
+|===
+| result
+| {score: 2.36, confidence: 0.36, probabilities: {None: 0.04, Mild: 0.12, Moderate: 0.28, Intense: 0.56}}
+|===
+=====
+
+[[score-described]]
+.Score with described levels
+=====
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m.plot AS plot, {
+  token: $token,
+  model: $model,
+  instructions: 'How complex is this plot?'
+} AS config
+RETURN ai.text.score(
+  plot,
+  [
+    {Simple: 'A single, linear storyline.'},
+    {Moderate: 'A few interwoven storylines.'},
+    {Complex: 'Many storylines, twists, or unreliable narration.'}
+  ],
+  'OpenAI',
+  config
+) AS result
+----
+
+[role="queryresult",options="header",cols="1"]
+|===
+| result
+| {score: 0.23, confidence: 0.66, probabilities: {Moderate:0.19, Simple:0.79, Complex:0.02}}
+|===
+=====
+
+
+[[predicate]]
+[role=label--new-2026.11]
+== Evaluate a condition
+
+.Signature for `ai.text.predicate`
+[role=label--function label--new-2026.11]
+[cols="1,1,1,3"]
+|===
+|    *Syntax*        3+| `ai.text.predicate(input, condition, provider, configuration = {}) :: FLOAT`
+|    *Description*   3+| Evaluate a condition about the input, giving the probability that it is true.
+.5+| *Inputs* | *Name*          | *Type*   | *Description*
+| `input`         | `STRING` | The text to evaluate the condition about.
+| `condition`     | `STRING` | The condition to evaluate, as a yes/no question or statement.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can describe what true and false mean by adding `criteria` with a map of optional `true` and `false` `STRING` descriptions. `criteria` is not supported by the OpenAI provider, which rejects it with an error.
+2+| *Returns*                            | `FLOAT`  | The probability that the condition is true of the input.
+|===
+
+The `condition` is itself the instruction to the provider, so there is no default instruction to override.
+
+[[predicate-examples]]
+=== Examples
+
+[[predicate-filter]]
+.Filter on a condition
+=====
+Because `ai.text.predicate` returns a number, you can use it directly in a `WHERE` clause.
+
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m, ai.text.predicate(
+  m.plot,
+  'Does the plot involve future technology?',
+  'OpenAI',
+  {token: $token, model: $model}
+) AS probability
+WHERE probability > 0.8
+RETURN m.title AS title, probability
+----
+
+[role="queryresult",options="header",cols="1,1"]
+|===
+| title | probability
+| "Matrix, The" | 0.87
+|===
+=====
+
+[[predicate-criteria]]
+.Describe what true and false mean
+=====
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+RETURN ai.text.predicate(
+  m.plot,
+  'Is this a story about technology?',
+  'Typesafe',
+  {
+    token: $token,
+    model: $model,
+    criteria: {
+      true: 'Technology is central to the plot.',
+      false: 'Technology is absent or only incidental.'
+    }
+  }
+) AS probability
+----
+
+[role="queryresult",options="header",cols="1,1"]
+|===
+| probability
+| 0.96
+|===
+=====
+
+
+[[decide]]
+[role=label--new-2026.11]
+== Decide several questions at once
+
+.Signature for `ai.text.decide`
+[role=label--function label--new-2026.11]
+[cols="1,1,1,3"]
+|===
+|    *Syntax*        3+| `ai.text.decide(input, questions, provider, configuration = {}) :: MAP`
+|    *Description*   3+| Answer a set of predicate, choice and score questions about the input, with probabilities.
+.5+| *Inputs* | *Name*          | *Type*   | *Description*
+| `input`         | `STRING` | The text to answer the questions about.
+| `questions`     | `MAP`    | A map of question name to question, see <<question-types>>.
+| `provider`      | `STRING` | The identifier of the provider: 'OpenAI', 'Typesafe'.
+| `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider.
+2+| *Returns*                            | `MAP`    | A map of question name to answer, in the order the questions were given.
+|===
+
+Asking several questions in one call sends a single request to the provider, which is cheaper and faster than calling the individual functions in turn.
+If `questions` is an empty map, no request is made and the function returns an empty map.
+`questions` must not be `null`.
+
+[[question-types]]
+=== Question types
+
+Each question is a map with a `type` and `instructions` (both required `STRING` values), plus the keys for its type.
+
+[cols="1,2,2"]
+|===
+| `type` | Additional keys | Answer
+
+| `predicate`
+| `criteria` (optional): a map of optional `true` and `false` `STRING` descriptions. Not supported by the OpenAI provider, which rejects it with an error.
+The types `boolean` and `noul` are accepted as aliases.
+| `{type: "predicate", probability}`
+
+| `choice`
+| `choices` (required): a map of choice to description, or a list of choices without descriptions.
+| `{type: "choice", choice, confidence, probabilities}`
+
+| `score`
+| `levels` (required): a list of levels ordered lowest first, where each level is a `STRING` or a single entry map of level to description.
+| `{type: "score", score, confidence, probabilities}`
+|===
+
+The type is not case sensitive.
+
+[[decide-examples]]
+=== Examples
+
+[[decide-all]]
+.Ask a predicate, a choice, and a score question together
+=====
+[source, cypher, test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+WITH m.plot AS plot, {
+  genre: {
+    type: 'choice',
+    instructions: 'Which genre best describes this movie?',
+    choices: {
+      scifi: 'Science fiction.',
+      drama: 'Character-driven stories.',
+      comedy: 'Humorous stories.'
+    }
+  },
+  has_future_tech: {
+    type: 'predicate',
+    instructions: 'Does the plot involve future technology?'
+  },
+  intensity: {
+    type: 'score',
+    instructions: 'How intense is the plot?',
+    levels: ['Low', 'Medium', 'High']
+  }
+} AS questions
+RETURN ai.text.decide(plot, questions, 'OpenAI', {token: $token, model: $model}) AS result
+----
+
+[role="queryresult",options="header",cols="1"]
+|===
+| result
+| {genre: {type: "choice", choice: "scifi", confidence: 0.96, probabilities: {scifi: 0.96, drama: 0.03, comedy: 0.01}}, has_future_tech: {type: "predicate", probability: 0.97}, intensity: {type: "score", score: 1.59, confidence: 0.62, probabilities: {Low: 0.03, Medium: 0.35, High: 0.62}}}
+|===
+=====
+
+[[decide-errors]]
+=== Invalid questions
+
+Questions are validated before any request is sent to the provider.
+The function fails with an error that names the offending question if:
+
+* a question is not a map, or its `type` or `instructions` is missing or not a `STRING`,
+* the `type` is not one of `predicate`, `choice`, or `score`,
+* `choices` or `levels` is empty, contains duplicates, or has the wrong shape (for example, `levels` given as a map),
+* `criteria` contains a key other than `true` or `false`.
+
+
+[[decide-providers]]
+== Providers
+
+All four functions use the same providers:
+
+* **OpenAI** (`OpenAI`)
+* **Typesafe** (`Typesafe`)
+
+Both providers take the same configuration, and neither accepts `vendorOptions`:
+
+[cols="1,1,3"]
+|===
+| Key | Type | Description
+
+| `token`
+| `STRING`
+| The API token for the provider. Required.
+
+| `model`
+| `STRING`
+| The model to use. Required.
+|===
+
+The OpenAI provider uses the base URL set by `genai.openai.baseurl`, if configured.
+
+Use `CALL ai.text.decide.providers()` (see xref:reference/functions-procedures.adoc#ai-text-decide-providers[reference]) to list the providers and their configuration options.

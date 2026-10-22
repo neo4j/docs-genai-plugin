@@ -5,6 +5,7 @@
 * xref:image-embeddings.adoc[]
 * xref:generate-text.adoc[]
 * xref:generate-structured-output.adoc[]
+* xref:decide-text.adoc[]
 * xref:count-tokens.adoc[]
 
 * *Reference*
