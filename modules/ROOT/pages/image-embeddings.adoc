@@ -36,6 +36,20 @@ Use the `ai.image.embed()` function to generate a vector embedding for a single 
 2+| *Returns* | `VECTOR` | The generated vector embedding for the image.
 |===
 
+.Example - Generate an embedding from a remote URL
+[source,cypher]
+----
+RETURN ai.image.embed(
+  "https://example.com/image.jpg",
+  "VertexAI",
+  {
+    project: $project,
+    region: "us-central1",
+    apiKey: $apiKey
+  }
+) AS vector
+----
+
 [[image-batch-embedding]]
 == Generate a batch of image embeddings
 
@@ -75,51 +89,7 @@ Use the `ai.image.embedBatch()` procedure to generate embeddings for a list of i
    | The generated vector embedding for the resource.
 |===
 
-[[image-providers]]
-== Image embedding providers
-
-Use `ai.image.embed.providers()` to list the available image vector embedding providers and their configuration.
-
-[source,cypher]
-----
-CALL ai.image.embed.providers()
-----
-
-.Result
-[queryresult, cols="1m,2m,2m,3m", options="header"]
-|===
-| name | requiredConfigType | optionalConfigType | defaultConfig
-| Bedrock-Titan
-| {region: STRING, accessKeyId: STRING, secretAccessKey: STRING}
-| {model: STRING, vendorOptions: MAP}
-| {model: "amazon.titan-embed-image-v1"}
-
-| VertexAI
-| {project: STRING, region: STRING, apiKey: STRING \| token: STRING}
-| {model: STRING, publisher: STRING, vendorOptions: MAP}
-| {model: "multimodalembedding", publisher: "google"}
-|===
-
-[[image-examples]]
-== Examples
-
-The following examples show how to generate and store image embeddings.
-
-.Generate an embedding from a remote URL
-[source,cypher]
-----
-RETURN ai.image.embed(
-  "https://example.com/image.jpg",
-  "VertexAI",
-  {
-    project: $project,
-    region: "us-central1",
-    apiKey: $apiKey
-  }
-) AS vector
-----
-
-.Generate and store embeddings for product images stored as local paths
+.Example -- Generate and store embeddings for product images stored as local paths
 [source,cypher]
 ----
 MATCH (p:Product)
@@ -138,8 +108,53 @@ SET (products[index]).embedding = vector
 RETURN count(*) AS count
 ----
 
-[[image-provider-config]]
-== Provider configuration
+[[image-providers]]
+== Image embedding providers
+
+Use `ai.image.embed.providers()` to list the available image vector embedding providers and their configuration.
+
+[source,cypher]
+----
+CALL ai.image.embed.providers()
+----
+
+.Result
+[queryresult, cols="1m,2m,2m,3m", options="header"]
+|===
+| name | requiredConfigType | optionalConfigType | defaultConfig
+| "Bedrock-Titan"
+| "{
+  accessKeyId :: STRING NOT NULL,
+  secretAccessKey :: STRING NOT NULL,
+  region :: STRING NOT NULL,
+  model :: STRING NOT NULL
+}"
+| "{
+  vendorOptions :: MAP NOT NULL
+}"
+| {
+  vendorOptions: {}
+}
+
+| "VertexAI"
+| "{
+  model :: STRING NOT NULL,
+  project :: STRING NOT NULL,
+  region :: STRING NOT NULL
+}"
+| "{
+  token :: STRING,
+  apiKey :: STRING,
+  publisher :: STRING NOT NULL,
+  maxBatchSize :: INTEGER NOT NULL,
+  vendorOptions :: MAP NOT NULL
+}"
+| {
+  publisher: "google",
+  maxBatchSize: -1,
+  vendorOptions: {}
+}
+|===
 
 For more details on the configuration parameters for each provider, see the following sections:
 
