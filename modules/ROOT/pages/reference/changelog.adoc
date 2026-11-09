@@ -15,6 +15,38 @@ This section lists all of the features that have been removed, deprecated, added
 Cypher 25 was introduced in Neo4j 2025.06 and can only be used on Neo4j 2025.06+ databases.
 For more information, see link:{neo4j-docs-base-uri}/cypher-manual/25/queries/select-version[Cypher Manual -> Select Cypher version].
 
+[[neo4j-2026.11]]
+== Neo4j 2026.11
+
+=== New in Cypher 25
+
+[cols="2", options="header"]
+|===
+| Feature
+| Details
+
+a|
+[source, cypher]
+----
+RETURN ai.text.classify(input, choices, provider, configuration)
+
+RETURN ai.text.score(input, levels, provider, configuration)
+
+RETURN ai.text.predicate(input, condition, provider, configuration)
+
+RETURN ai.text.decide(input, questions, provider, configuration)
+
+CALL ai.text.decide.providers() YIELD name, requiredConfigType, optionalConfigType, defaultConfig
+----
+| New functions xref:reference/functions-procedures.adoc#ai-text-classify[`ai.text.classify()`], xref:reference/functions-procedures.adoc#ai-text-score[`ai.text.score()`], xref:reference/functions-procedures.adoc#ai-text-predicate[`ai.text.predicate()`], and xref:reference/functions-procedures.adoc#ai-text-decide[`ai.text.decide()`] to classify text, score it on an ordered scale, or evaluate conditions about it, with probabilities.
+New procedure xref:reference/functions-procedures.adoc#ai-text-decide-providers[`ai.text.decide.providers()`] to display the available providers and their config setup.
+
+The functions support the providers `Azure-OpenAI`, `Bedrock`, `OpenAI`, `Typesafe`, and `VertexAI`.
+
+See xref:decide-text.adoc[].
+
+|===
+
 [[neo4j-2026.06]]
 == Neo4j 2026.06
 
@@ -40,7 +72,6 @@ New procedure xref:reference/functions-procedures.adoc#ai-image-embed-providers[
 See xref:image-embeddings.adoc[].
 
 |===
-
 
 [[neo4j-2026.05]]
 == Neo4j 2026.05
