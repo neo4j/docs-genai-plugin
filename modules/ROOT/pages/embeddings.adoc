@@ -54,10 +54,12 @@ Choose the tab that matches the setup you selected there.
 
 [.tabbed-example]
 ====
-[.include-with-Enterprise-Edition-or-Aura]
+[.include-with-Community-Edition-Enterprise-Edition-or-Aura]
 ======
+[NOTE,label="Community Edition"]
+Storing `VECTOR` values requires link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format] and for Community Edition, also to be version 2026.11 or later.
+
 `ai.text.embed()` returns a link:https://neo4j.com/docs/cypher-manual/25/values-and-types/vector/[`VECTOR`].
-Storing `VECTOR` values on self-managed instances requires Enterprise Edition and link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format].
 
 .Create a `VECTOR` embedding property for the Godfather
 [source,cypher]
@@ -87,7 +89,7 @@ RETURN m.embedding AS embedding
 ======
 
 
-[.include-with-Community-Edition]
+[.include-with-Community-Edition-prior-to-2026-11]
 ======
 `ai.text.embed()` returns a link:https://neo4j.com/docs/cypher-manual/25/values-and-types/vector/[`VECTOR`], which can be converted into a list with link:https://neo4j.com/docs/cypher-manual/25/functions/list/#functions-tofloatlist[`toFloatList()`].
 Use this compatibility workflow on Community Edition or on databases that use aligned format.
@@ -176,10 +178,10 @@ If a resource is larger than the specified `maxBatchSize`, it must be chunked ma
 
 [.tabbed-example]
 ====
-[.include-with-Enterprise-Edition-or-Aura]
+[.include-with-Community-Edition-Enterprise-Edition-or-Aura]
 ======
 `ai.text.embedBatch()` returns a `VECTOR` for each input resource.
-Storing `VECTOR` values on an on-prem instance requires Enterprise Edition and link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format].
+Storing `VECTOR` values on an on-prem instance requires link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[block format] and for Community Edition, also to be version 2026.11 or later.
 
 .Create embeddings from a limited number of properties and store them as `VECTOR` properties
 [source,cypher]
@@ -233,7 +235,7 @@ For an alternative method more suitable to processing large amounts of data, see
 ======
 
 
-[.include-with-Community-Edition]
+[.include-with-Community-Edition-prior-to-2026-11]
 ======
 `ai.text.embedBatch()` returns a `VECTOR` for each input resource, which can be converted into a list with link:https://neo4j.com/docs/cypher-manual/25/functions/list/#functions-tofloatlist[`toFloatList()`].
 These compatibility workflows store embeddings as `LIST<FLOAT>` properties.

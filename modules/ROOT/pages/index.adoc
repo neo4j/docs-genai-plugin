@@ -35,7 +35,7 @@ image::genai-graph.svg[Example graph connecting person and actor nodes with a mo
 To follow the examples in this manual, you need to import a dump file.
 The file to import depends on the edition/deployment of Neo4j you are using and which link:{neo4j-docs-base-uri}/operations-manual/current/database-internals/store-formats/#store-format-overview[storage format] is available:
 
-- Enterprise Edition or any Aura instance -- Import the link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26-block.dump[dump file] in block format.
-- Community Edition -- Import the link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26.dump[dump file] in aligned format.
+- Enterprise Edition, any Aura instance, or Community Edition 2026.11 or later -- Import the link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26-block.dump[dump file] in `block` format.
+- Community Edition prior to 2026.11 -- Import the link:https://github.com/neo4j-graph-examples/recommendations/raw/main/data/recommendations-5.26.dump[dump file] in `aligned` format.
 
 For instructions on importing dump files, see link:https://neo4j.com/docs/aura/managing-instances/backup-restore-export/#restore-backup[Aura -> Backup, export, restore, and upload] or link:https://neo4j.com/docs/operations-manual/current/backup-restore/restore-dump/[Operations manual -> Restore a database dump].
