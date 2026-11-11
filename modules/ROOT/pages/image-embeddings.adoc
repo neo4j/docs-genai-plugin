@@ -45,7 +45,8 @@ RETURN ai.image.embed(
   {
     project: $project,
     region: "us-central1",
-    apiKey: $apiKey
+    apiKey: $apiKey,
+    model: 'multimodalembedding@001'
   }
 ) AS vector
 ----
@@ -101,7 +102,8 @@ CALL ai.image.embedBatch(
   {
     region: "us-east-1",
     accessKeyId: $accessKey,
-    secretAccessKey: $secretKey
+    secretAccessKey: $secretKey,
+    model: 'amazon.titan-embed-image-v1'
   }
 ) YIELD index, vector
 SET (products[index]).embedding = vector
