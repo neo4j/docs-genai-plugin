@@ -305,11 +305,12 @@ The query `CALL ai.text.embed.providers()` (see xref:reference/functions-procedu
 .OpenAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*   | *Default* | *Description*
-| `model`         | `STRING` | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
-| `token`         | `STRING` | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
-| `maxBatchSize`  | `INTEGER`| `8192`    | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
-| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Open AI (see https://platform.openai.com/docs/api-reference/embeddings/create[OpenAI -> Create embeddings]).
+| *Name*            | *Type*   | *Default* | *Description*
+| `model`           | `STRING` | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
+| `token`           | `STRING` | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
+| `tokenSecretName` | `STRING` | -         | Name of a secret holding the API key, as an alternative to `token`. See xref:secrets.adoc[].
+| `maxBatchSize`    | `INTEGER`| `8192`    | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
+| `vendorOptions`   | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Open AI (see https://platform.openai.com/docs/api-reference/embeddings/create[OpenAI -> Create embeddings]).
 |===
 
 .Example -- Embed the string `Hello World!`
@@ -338,12 +339,13 @@ See xref:reference/config.adoc#config-genai.openai.baseurl[Configuration Options
 .Azure OpenAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*   | *Default* | *Description*
-| `model`         | `STRING` | -         | Model id (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
-| `resource`      | `STRING` | -         | Azure resource name.
-| `token`         | `STRING` | -         | Azure OAuth2 bearer token.
-| `maxBatchSize`  | `INTEGER`| `8192`    | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
-| `vendorOptions` | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Azure.
+| *Name*            | *Type*   | *Default* | *Description*
+| `model`           | `STRING` | -         | Model id (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
+| `resource`        | `STRING` | -         | Azure resource name.
+| `token`           | `STRING` | -         | Azure OAuth2 bearer token.
+| `tokenSecretName` | `STRING` | -         | Name of a secret holding the bearer token, as an alternative to `token`. See xref:secrets.adoc[].
+| `maxBatchSize`    | `INTEGER`| `8192`    | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
+| `vendorOptions`   | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Azure.
 |===
 
 .Example -- Embed the string `Hello World!`
@@ -373,19 +375,21 @@ See xref:reference/config.adoc#config-genai.azure.openai.baseurl[Configuration O
 .Google VertexAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*   | *Default*  | *Description*
-| `model`         | `STRING` | -          | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
-| `project`       | `STRING` | -          | Google Cloud project ID.
-| `region`        | `STRING` | -          | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
-| `publisher`     | `STRING` | `'google'` | Model publisher.
-| `apiKey`        | `STRING` | -          | Vertex AI API key.
-| `token`         | `STRING` | -          | Vertex AI API access token.
-| `maxBatchSize`  | `INTEGER`| -          | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
-| `vendorOptions` | `MAP`    | `{}`       | Optional vendor options that will be passed on as-is in the request to Vertex (see https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1/projects.locations.publishers.models/predict[Vertex AI -> Method: models.predict]).
+| *Name*             | *Type*   | *Default*  | *Description*
+| `model`            | `STRING` | -          | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
+| `project`          | `STRING` | -          | Google Cloud project ID.
+| `region`           | `STRING` | -          | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
+| `publisher`        | `STRING` | `'google'` | Model publisher.
+| `apiKey`           | `STRING` | -          | Vertex AI API key.
+| `token`            | `STRING` | -          | Vertex AI API access token.
+| `apiKeySecretName` | `STRING` | -          | Name of a secret holding the API key, as an alternative to `apiKey`. See xref:secrets.adoc[].
+| `tokenSecretName`  | `STRING` | -          | Name of a secret holding the access token, as an alternative to `token`. See xref:secrets.adoc[].
+| `maxBatchSize`     | `INTEGER`| -          | The maximum amount of data (measured in tokens) sent at a time. label:new[Introduced in 2026.04]
+| `vendorOptions`    | `MAP`    | `{}`       | Optional vendor options that will be passed on as-is in the request to Vertex (see https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1/projects.locations.publishers.models/predict[Vertex AI -> Method: models.predict]).
 |===
 
 [NOTE]
-Exactly one of `apiKey` or `token` must be provided.
+Exactly one of `apiKey`, `token`, `apiKeySecretName`, or `tokenSecretName` must be provided.
 
 .Example -- Embed the string `Hello World!`
 [source, cypher]
@@ -418,6 +422,7 @@ This provider supports all models that use the same request parameters and respo
 | `region`          | `STRING` | -         | Amazon region (see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html[Amazon Bedrock -> Model Support]).
 | `accessKeyId`     | `STRING` | -         | Amazon access key ID.
 | `secretAccessKey` | `STRING` | -         | Amazon secret access key.
+| `awsSecretName`   | `STRING` | -         | Name of an AWS secret holding the access key ID and secret access key, as an alternative to `accessKeyId` and `secretAccessKey`. See xref:secrets.adoc[].
 | `vendorOptions`   | `MAP`    | `{}`      | Optional vendor options that will be passed on as-is in the request to Bedrock (see https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters.html[Amazon Bedrock -> Inference request parameters and response fields]).
 |===
 

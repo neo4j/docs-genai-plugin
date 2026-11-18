@@ -10,6 +10,7 @@ Neo4j's GenAI plugin provides functions and procedures to interact with external
 
 [NOTE]
 To use the plugin's features, you need an account and API credentials from one of the supported external AI providers: (OpenAI, Azure OpenAI, VertexAI, Amazon Bedrock).
+On Enterprise Edition, you can store these credentials in the Neo4j Secrets Manager and refer to them by name instead of passing them as strings, see xref:secrets.adoc[].
 
 [[installation]]
 == Installation

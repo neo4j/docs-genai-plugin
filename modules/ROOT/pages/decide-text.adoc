@@ -414,7 +414,11 @@ For these two providers:
 
 | `token`
 | `STRING`
-| The API token for the provider. Required.
+| The API token for the provider. Required, unless `tokenSecretName` is set.
+
+| `tokenSecretName`
+| `STRING`
+| Name of a secret holding the API token, as an alternative to `token`. See xref:secrets.adoc[].
 
 | `model`
 | `STRING`
@@ -434,7 +438,11 @@ The OpenAI provider uses the base URL set by `genai.openai.baseurl`, if configur
 
 | `token`
 | `STRING`
-| Azure OAuth2 bearer token. Required.
+| Azure OAuth2 bearer token. Required, unless `tokenSecretName` is set.
+
+| `tokenSecretName`
+| `STRING`
+| Name of a secret holding the bearer token, as an alternative to `token`. See xref:secrets.adoc[].
 
 | `resource`
 | `STRING`
@@ -485,13 +493,23 @@ The provider does not accept `vendorOptions`.
 | -
 | Vertex AI API access token.
 
+| `apiKeySecretName`
+| `STRING`
+| -
+| Name of a secret holding the API key, as an alternative to `apiKey`. See xref:secrets.adoc[].
+
+| `tokenSecretName`
+| `STRING`
+| -
+| Name of a secret holding the access token, as an alternative to `token`. See xref:secrets.adoc[].
+
 | `vendorOptions`
 | `MAP`
 | `{}`
 | Vendor options that are passed on as-is in the request to Vertex AI.
 |===
 
-Exactly one of `apiKey` or `token` must be provided.
+Exactly one of `apiKey`, `token`, `apiKeySecretName`, or `tokenSecretName` must be provided.
 
 [[providers-bedrock]]
 === Amazon Bedrock
@@ -514,12 +532,17 @@ Exactly one of `apiKey` or `token` must be provided.
 | `accessKeyId`
 | `STRING`
 | -
-| Amazon access key ID. Required.
+| Amazon access key ID. Required, unless `awsSecretName` is set.
 
 | `secretAccessKey`
 | `STRING`
 | -
-| Amazon secret access key. Required.
+| Amazon secret access key. Required, unless `awsSecretName` is set.
+
+| `awsSecretName`
+| `STRING`
+| -
+| Name of an AWS secret holding the access key ID and secret access key, as an alternative to `accessKeyId` and `secretAccessKey`. See xref:secrets.adoc[].
 
 | `vendorOptions`
 | `MAP`

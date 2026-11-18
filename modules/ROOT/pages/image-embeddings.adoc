@@ -126,13 +126,14 @@ CALL ai.image.embed.providers()
 | name | requiredConfigType | optionalConfigType | defaultConfig
 | "Bedrock-Titan"
 | "{
-  accessKeyId :: STRING NOT NULL,
-  secretAccessKey :: STRING NOT NULL,
   region :: STRING NOT NULL,
   model :: STRING NOT NULL
 }"
 | "{
-  vendorOptions :: MAP NOT NULL
+  accessKeyId :: STRING,
+  secretAccessKey :: STRING,
+  vendorOptions :: MAP NOT NULL,
+  awsSecretName :: STRING
 }"
 | {
   vendorOptions: {}
@@ -149,7 +150,9 @@ CALL ai.image.embed.providers()
   apiKey :: STRING,
   publisher :: STRING NOT NULL,
   maxBatchSize :: INTEGER NOT NULL,
-  vendorOptions :: MAP NOT NULL
+  vendorOptions :: MAP NOT NULL,
+  tokenSecretName :: STRING,
+  apiKeySecretName :: STRING
 }"
 | {
   publisher: "google",
@@ -157,6 +160,8 @@ CALL ai.image.embed.providers()
   vendorOptions: {}
 }
 |===
+
+The `awsSecretName`, `tokenSecretName`, and `apiKeySecretName` entries let you refer to credentials stored in the Secrets Manager instead of passing `accessKeyId` and `secretAccessKey`, `token`, or `apiKey` directly, see xref:secrets.adoc[].
 
 For more details on the configuration parameters for each provider, see the following sections:
 

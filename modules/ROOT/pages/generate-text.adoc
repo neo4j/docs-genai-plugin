@@ -720,10 +720,11 @@ You can generate text via the following providers:
 .OpenAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*      | *Default* | *Description*
-| `model`         | `STRING`    | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
-| `token`         | `STRING`    | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
-| `chatHistory`   | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
+| *Name*            | *Type*      | *Default* | *Description*
+| `model`           | `STRING`    | -         | Model ID (see https://platform.openai.com/docs/models[OpenAI -> Models]).
+| `token`           | `STRING`    | -         | OpenAI API key (see https://platform.openai.com/api-keys[OpenAI -> API Keys]).
+| `tokenSecretName` | `STRING`    | -         | Name of a secret holding the credential, as an alternative to `token`. See xref:secrets.adoc[].
+| `chatHistory`     | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
 
 - `role`: either `user` or `assistant`
 - `content`: a `STRING` representing a message
@@ -766,11 +767,12 @@ See xref:reference/config.adoc#config-genai.openai.baseurl[Configuration setting
 .Azure OpenAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*      | *Default* | *Description*
-| `model`         | `STRING`    | -         | Model ID (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
-| `resource`      | `STRING`    | -         | Azure resource name.
-| `token`         | `STRING`    | -         | Azure OAuth2 bearer token.
-| `chatHistory`   | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
+| *Name*            | *Type*      | *Default* | *Description*
+| `model`           | `STRING`    | -         | Model ID (see https://learn.microsoft.com/en-us/azure/ai-foundry/openai/overview[Azure -> Azure OpenAI in Foundry Models]).
+| `resource`        | `STRING`    | -         | Azure resource name.
+| `token`           | `STRING`    | -         | Azure OAuth2 bearer token.
+| `tokenSecretName` | `STRING`    | -         | Name of a secret holding the credential, as an alternative to `token`. See xref:secrets.adoc[].
+| `chatHistory`     | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
 
 - `role`: either `user` or `assistant`
 - `content`: a `STRING` representing a message
@@ -814,14 +816,16 @@ RETURN ai.text.completion('Yes, please recommend a movie to me', 'azure-openai',
 .VertexAI parameters
 [opts=header, cols="1,1,1,3"]
 |===
-| *Name*          | *Type*      | *Default* | *Description*
-| `model`         | `STRING`    | -         | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
-| `project`       | `STRING`    | -         | Google cloud project ID.
-| `region`        | `STRING`    | -         | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
-| `publisher`     | `STRING`    | 'google'  | Model publisher.
-| `apiKey`        | `STRING`    | -         | Vertex AI API key.
-| `token`         | `STRING`    | -         | Vertex API access token.
-| `chatHistory`   | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
+| *Name*             | *Type*      | *Default* | *Description*
+| `model`            | `STRING`    | -         | Model resource name (see https://console.cloud.google.com/vertex-ai/model-garden[Vertex AI -> Model Garden]).
+| `project`          | `STRING`    | -         | Google cloud project ID.
+| `region`           | `STRING`    | -         | Google cloud region (see https://cloud.google.com/vertex-ai/docs/general/locations[Vertex AI -> Locations]).
+| `publisher`        | `STRING`    | 'google'  | Model publisher.
+| `apiKey`           | `STRING`    | -         | Vertex AI API key.
+| `apiKeySecretName` | `STRING`    | -         | Name of a secret holding the API key, as an alternative to `apiKey`. See xref:secrets.adoc[].
+| `token`            | `STRING`    | -         | Vertex API access token.
+| `tokenSecretName`  | `STRING`    | -         | Name of a secret holding the credential, as an alternative to `token`. See xref:secrets.adoc[].
+| `chatHistory`      | `LIST<ANY>` | `[]`      a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
 
 - `role`: either `user` or `assistant`
 - `parts`: a `LIST` containing a `MAP` with the key `text` and value representing a message
@@ -829,7 +833,7 @@ RETURN ai.text.completion('Yes, please recommend a movie to me', 'azure-openai',
 |===
 
 [NOTE]
-Exactly one of `apiKey` or `token` must be provided.
+Exactly one of `apiKey`, `token`, `apiKeySecretName`, or `tokenSecretName` must be provided.
 
 .Usage example
 [source, cypher]
@@ -876,6 +880,7 @@ This provider supports most Bedrock models and follows the https://docs.aws.amaz
 | `region`          | `STRING`    | -         | Amazon region (see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html[Amazon Bedrock -> Model Support]).
 | `accessKeyId`     | `STRING`    | -         | Amazon access key ID.
 | `secretAccessKey` | `STRING`    | -         | Amazon secret access key.
+| `awsSecretName`   | `STRING`    | -         | Name of an AWS secret holding the access key ID and secret access key, as an alternative to `accessKeyId` and `secretAccessKey`. See xref:secrets.adoc[].
 | `chatHistory`     | `LIST<ANY>` | `[]`     a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
 
 - `role`: either `user` or `assistant`
@@ -927,6 +932,7 @@ This provider supports all models that use the same request parameters and respo
 | `region`          | `STRING`    | -         | Amazon region (see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html[Amazon Bedrock -> Model Support]).
 | `accessKeyId`     | `STRING`    | -         | Amazon access key ID.
 | `secretAccessKey` | `STRING`    | -         | Amazon secret access key.
+| `awsSecretName`   | `STRING`    | -         | Name of an AWS secret holding the access key ID and secret access key, as an alternative to `accessKeyId` and `secretAccessKey`. See xref:secrets.adoc[].
 | `chatHistory`     | `LIST<ANY>` | `[]`     a| Optional conversation history to provide context to the model. Pass a list of `MAP` values with structure:
 
 - `role`: either `user` or `assistant`
