@@ -63,7 +63,7 @@ The results shown are illustrative: the output depends on the provider and model
 .5+| *Inputs* | *Name*          | *Type*   | *Description*
 | `input`         | `STRING`              | The text to classify.
 | `choices`       | `ANY` | The options to classify the input into. Either a list of options, or a map of the form `{<choice>: <description>}`.
-| `provider`      | `STRING`              | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'OpenAI', 'Typesafe', 'VertexAI'.
+| `provider`      | `STRING`              | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'Gemini', 'OpenAI', 'Typesafe', 'VertexAI'.
 | `configuration` | `MAP`                 | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider.
 .4+| *Returns* | *Key*           | *Type*   | *Description*
 | `choice`        | `STRING`              | The selected option.
@@ -142,7 +142,7 @@ RETURN ai.text.classify(
 .5+| *Inputs* | *Name*          | *Type*   | *Description*
 | `input`         | `STRING`        | The text to score.
 | `levels`        | `ANY`           | The levels to score the input on, ordered lowest first. Either a list of levels, or a list of single entry maps of level to a description of it.
-| `provider`      | `STRING`        | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'OpenAI', 'Typesafe', 'VertexAI'.
+| `provider`      | `STRING`        | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'Gemini', 'OpenAI', 'Typesafe', 'VertexAI'.
 | `configuration` | `MAP`           | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider.
 .4+| *Returns* | *Key*           | *Type*   | *Description*
 | `score`         | `FLOAT`         | The score of the input as a position on the scale, where `0` is the first (lowest) level. A fractional value falls between levels, weighted by their probabilities.
@@ -222,7 +222,7 @@ RETURN ai.text.score(
 .5+| *Inputs* | *Name*          | *Type*   | *Description*
 | `input`         | `STRING` | The text to evaluate the condition about.
 | `condition`     | `STRING` | The condition to evaluate, as a yes/no question or statement.
-| `provider`      | `STRING` | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'OpenAI', 'Typesafe', 'VertexAI'.
+| `provider`      | `STRING` | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'Gemini', 'OpenAI', 'Typesafe', 'VertexAI'.
 | `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider. You can describe what true and false mean by adding `criteria` with a map of optional `true` and `false` `STRING` descriptions.
 2+| *Returns*                            | `FLOAT`  | The probability that the condition is true of the input.
 |===
@@ -299,7 +299,7 @@ RETURN ai.text.predicate(
 .5+| *Inputs* | *Name*          | *Type*   | *Description*
 | `input`         | `STRING` | The text to answer the questions about.
 | `questions`     | `MAP`    | A map `{<label>: <question>}`. Each question has a `type` ('predicate', 'choice' or 'score') and `instructions`. A 'choice' question also has `choices`, a map `{<choice>: <description>}`. A 'score' question also has `levels`, a list of level labels ordered lowest first. See <<question-types>>.
-| `provider`      | `STRING` | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'OpenAI', 'Typesafe', 'VertexAI'.
+| `provider`      | `STRING` | The identifier of the provider: 'Azure-OpenAI', 'Bedrock', 'Gemini', 'OpenAI', 'Typesafe', 'VertexAI'.
 | `configuration` | `MAP`    | Provider specific configuration, use `CALL ai.text.decide.providers()` to find the configuration needed for each provider.
 2+| *Returns*                            | `MAP`    | A map of question name to answer, in the order the questions were given.
 |===
@@ -391,11 +391,12 @@ All four functions use the same providers:
 
 * **Azure OpenAI** (`Azure-OpenAI`)
 * **Amazon Bedrock** (`Bedrock`)
+* **Google Gemini** (`Gemini`)
 * **OpenAI** (`OpenAI`)
 * **Typesafe** (`Typesafe`)
 * **Google Vertex AI** (`VertexAI`)
 
-OpenAI, Azure OpenAI, and Typesafe have an endpoint that decides and return probabilities calculated by the provider.
+OpenAI, Azure OpenAI, Gemini, and Typesafe have an endpoint that decides and return probabilities calculated by the provider.
 Bedrock and Vertex AI do not, so they answer through structured output instead.
 For these two providers:
 
@@ -446,6 +447,64 @@ The OpenAI provider uses the base URL set by `genai.openai.baseurl`, if configur
 |===
 
 The provider does not accept `vendorOptions`.
+
+[[providers-gemini]]
+[role=label--new-2026.12]
+=== Google Gemini
+
+The `Gemini` provider uses the https://aistudio.google.com/docs/decisions-api[Gemini Decisions API^] of the Gemini Developer API.
+
+[WARNING]
+====
+The Gemini Decisions API is in beta release.
+It may change or be withdrawn by Google, which can affect the behavior of the `Gemini` provider.
+For details about the API, see the https://aistudio.google.com/docs/decisions-api[Gemini Decisions API documentation^].
+====
+
+.Gemini parameters
+[cols="1,1,1,3"]
+|===
+| Key | Type | Default | Description
+
+| `model`
+| `STRING`
+| -
+| The model to use. Required.
+
+| `apiKey`
+| `STRING`
+| -
+| Gemini API key.
+
+| `token`
+| `STRING`
+| -
+| OAuth access token.
+
+| `project`
+| `STRING`
+| -
+| Google Cloud quota project. Required when using `token`.
+
+| `vendorOptions`
+| `MAP`
+| `{}`
+| Vendor options that are passed on as-is in the request to the Gemini Decisions API.
+|===
+
+Exactly one of `apiKey` or `token` must be provided.
+
+.Classify text with Gemini
+[source, cypher, role=test-skip]
+----
+MATCH (m:Movie {title: 'Matrix, The'})
+RETURN ai.text.classify(
+  m.plot,
+  ['Action', 'Comedy', 'Drama'],
+  'Gemini',
+  {apiKey: $apiKey, model: $model}
+) AS result
+----
 
 [[providers-vertexai]]
 === Google Vertex AI
