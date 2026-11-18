@@ -15,6 +15,35 @@ This section lists all of the features that have been removed, deprecated, added
 Cypher 25 was introduced in Neo4j 2025.06 and can only be used on Neo4j 2025.06+ databases.
 For more information, see link:{neo4j-docs-base-uri}/cypher-manual/25/queries/select-version[Cypher Manual -> Select Cypher version].
 
+[[neo4j-2026.12]]
+== Neo4j 2026.12
+
+=== New in Cypher 25
+
+[cols="2", options="header"]
+|===
+| Feature
+| Details
+
+a|
+[source, cypher]
+----
+RETURN ai.text.embed(resource, 'openai', { tokenSecretName: 'myToken', model: 'text-embedding-3-small' })
+
+RETURN ai.text.embed(resource, 'vertexai', { apiKeySecretName: 'myKey', ... })
+
+RETURN ai.text.embed(resource, 'bedrock-titan', { awsSecretName: 'myAwsCreds', ... })
+----
+| All `ai.\*` functions and procedures that take a `configuration` map can now read provider credentials from the Neo4j Secrets Manager using the `tokenSecretName`, `apiKeySecretName`, and `awsSecretName` parameters, instead of passing `token`, `apiKey`, or `accessKeyId` and `secretAccessKey` as strings.
+The secret is read with the privileges of the user running the query, which requires the `ACCESS SECRET` privilege.
+The `ai.\*.providers()` procedures now list these parameters.
+
+See xref:secrets.adoc[].
+
+// TODO: Link to the Operations Manual page on the Secrets Manager once it is published.
+
+|===
+
 [[neo4j-2026.11]]
 == Neo4j 2026.11
 

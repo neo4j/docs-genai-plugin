@@ -118,10 +118,10 @@ RETURN ai.text.tokenCount(plot, 'Bedrock', config) AS tokenCount
 
 Different providers use different methods for counting tokens:
 
-- **OpenAI** (`OpenAI`) -- Uses a local tokenizer: no API call is made and no API `token` is required in the configuration.
-- **Amazon Bedrock** (`Bedrock`) -- Makes a free API call to AWS to count tokens. You must provide the necessary credentials (`accessKeyId`, `secretAccessKey`, `region`) in the configuration.
+- **OpenAI** (`OpenAI`) -- Uses a local tokenizer: no API call is made and no API `token` (or `tokenSecretName`) is required in the configuration.
+- **Amazon Bedrock** (`Bedrock`) -- Makes a free API call to AWS to count tokens. You must provide the necessary credentials (`accessKeyId` and `secretAccessKey`, or `awsSecretName`, plus `region`) in the configuration.
 For more information about supported models, see the link:https://docs.aws.amazon.com/bedrock/latest/userguide/count-tokens.html[AWS Bedrock documentation].
-- **Google Vertex AI** (`VertexAI`) -- Makes a free API call to Google Cloud to count tokens. You must provide the necessary configuration (`project`, `region`, and `apiKey` or `token`).
+- **Google Vertex AI** (`VertexAI`) -- Makes a free API call to Google Cloud to count tokens. You must provide the necessary configuration (`project`, `region`, and `apiKey`, `token`, `apiKeySecretName`, or `tokenSecretName`).
 For more information about supported models, see the link:https://docs.cloud.google.com/vertex-ai/generative-ai/docs/model-reference/count-tokens[Google Vertex AI documentation].
 
 [TIP]
